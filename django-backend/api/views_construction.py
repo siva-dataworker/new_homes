@@ -495,12 +495,12 @@ def check_entry_lock(request):
         else:
             entry_date = date.today()
         
-        # Determine entry type based on current time
-        current_hour = datetime.now().hour
+        # Determine entry type based on current IST time
+        from .time_utils import get_ist_now
+        current_hour = get_ist_now().hour
         entry_type = 'morning' if current_hour < 12 else 'evening'
         
         user_role = request.user.get('role')
-        print(f"[ENTRY_LOCK_CHECK] Checking lock for site={site_id}, date={entry_date}, type={entry_type}, user={user_id}, role={user_role}")
 
         if not user_role:
             return Response({'error': 'User role not found in token'},
@@ -527,7 +527,6 @@ def check_entry_lock(request):
         
         if not entries:
             # No entries - site is available
-            print(f"[ENTRY_LOCK_CHECK] No entries found - site available")
             return Response({
                 'is_locked': False,
                 'can_enter': True,
