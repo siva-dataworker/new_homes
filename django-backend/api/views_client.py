@@ -2,6 +2,9 @@
 Client Dashboard APIs
 Provides read-only access to site information for clients
 """
+import logging
+from collections import defaultdict
+
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,40 +13,34 @@ from .authentication import JWTAuthentication
 from .database import fetch_one, fetch_all
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_client_site_details(request):
     """
-    Get comprehensive site details for logged-in client
+    Get comprehensive site details for logged-in client.
     GET /api/client/site-details/
-    
-    Returns:
-    - Site information
-    - Labour counts (total and recent)
-    - Photos uploaded by supervisor
-    - Floor designs and agreements (architect documents)
-    - Project files (site engineer documents)
+
+    Issue-16 fix: Replaced N+1 pattern (5 queries × N sites) with
+    6 batch queries total regardless of how many sites the client has.
     """
     try:
-        user_id = request.user['user_id']
+        user_id   = request.user['user_id']
         user_role = request.user.get('role', '')
-        
-        print(f"🔍 CLIENT API DEBUG:")
-        print(f"   User ID: {user_id}")
-        print(f"   User Role: {user_role}")
-        
-        # Only clients can access this endpoint
+
         if user_role.lower() != 'client':
-            return Response({
-                'error': 'This endpoint is only for clients'
-            }, status=status.HTTP_403_FORBIDDEN)
-        
-        # Get assigned sites
+            return Response(
+                {'error': 'This endpoint is only for clients'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # ── 1. Fetch all assigned sites (1 query) ────────────────────────────
         sites = fetch_all("""
-            SELECT 
-                cs.id as assignment_id,
+            SELECT
+                cs.id   AS assignment_id,
                 cs.site_id,
                 cs.assigned_date,
                 s.site_name,
@@ -57,167 +54,232 @@ def get_client_site_details(request):
             WHERE cs.client_id = %s AND cs.is_active = TRUE
             ORDER BY cs.assigned_date DESC
         """, (user_id,))
-        
-        print(f"   Sites found: {len(sites) if sites else 0}")
-        if sites:
-            for site in sites:
-                print(f"      - {site.get('customer_name')} {site.get('site_name')}")
-        
+
         if not sites:
-            return Response({
-                'success': True,
-                'message': 'No sites assigned',
-                'sites': []
-            })
-        
-        # Get details for each site
+            return Response({'success': True, 'message': 'No sites assigned', 'sites': []})
+
+        site_ids     = [str(s['site_id']) for s in sites]
+        placeholders = ','.join(['%s'] * len(site_ids))
+
+        # ── 2. Labour summary — all sites in one query ────────────────────────
+        labour_summaries_raw = fetch_all(f"""
+            SELECT
+                site_id,
+                COUNT(DISTINCT entry_date) AS total_days,
+                SUM(labour_count)          AS total_labour_count,
+                MAX(entry_date)            AS last_entry_date
+            FROM labour_entries
+            WHERE site_id IN ({placeholders})
+            GROUP BY site_id
+        """, site_ids)
+        labour_summary_map = {str(r['site_id']): r for r in labour_summaries_raw}
+
+        # ── 3. Recent labour entries (last 7 per site) — one query ───────────
+        recent_labour_raw = fetch_all(f"""
+            SELECT
+                le.site_id,
+                le.entry_date,
+                le.labour_type,
+                le.labour_count,
+                le.day_of_week,
+                u.full_name AS supervisor_name
+            FROM labour_entries le
+            LEFT JOIN users u ON le.supervisor_id = u.id
+            WHERE le.site_id IN ({placeholders})
+            ORDER BY le.site_id, le.entry_date DESC
+        """, site_ids)
+        # Partition in Python — keep latest 7 per site
+        recent_labour_map = defaultdict(list)
+        for row in recent_labour_raw:
+            sid = str(row['site_id'])
+            if len(recent_labour_map[sid]) < 7:
+                recent_labour_map[sid].append(row)
+
+        # ── 4. Supervisor photos (latest 20 per site) — one query ─────────────
+        photos_raw = fetch_all(f"""
+            SELECT
+                sp.site_id,
+                sp.id,
+                sp.image_url,
+                sp.time_of_day,
+                sp.description,
+                sp.upload_date,
+                u.full_name AS supervisor_name
+            FROM site_photos sp
+            LEFT JOIN users u ON sp.uploaded_by = u.id
+            WHERE sp.site_id IN ({placeholders})
+            ORDER BY sp.site_id, sp.upload_date DESC
+        """, site_ids)
+        photos_map = defaultdict(list)
+        for row in photos_raw:
+            sid = str(row['site_id'])
+            if len(photos_map[sid]) < 20:
+                photos_map[sid].append(row)
+
+        # ── 5. Architect documents — one query ────────────────────────────────
+        arch_docs_raw = fetch_all(f"""
+            SELECT
+                ad.site_id,
+                ad.id,
+                ad.document_type,
+                ad.title,
+                ad.description,
+                ad.file_url,
+                ad.file_name,
+                ad.file_size,
+                ad.upload_date,
+                u.full_name AS architect_name
+            FROM architect_documents ad
+            LEFT JOIN users u ON ad.architect_id = u.id
+            WHERE ad.site_id IN ({placeholders}) AND ad.is_active = TRUE
+            ORDER BY ad.site_id, ad.upload_date DESC
+        """, site_ids)
+        arch_docs_map = defaultdict(list)
+        for row in arch_docs_raw:
+            arch_docs_map[str(row['site_id'])].append(row)
+
+        # ── 6. Site engineer documents — one query ────────────────────────────
+        eng_docs_raw = fetch_all(f"""
+            SELECT
+                sed.site_id,
+                sed.id,
+                sed.document_type,
+                sed.title,
+                sed.description,
+                sed.file_url,
+                sed.file_name,
+                sed.file_size,
+                sed.upload_date,
+                u.full_name AS engineer_name
+            FROM site_engineer_documents sed
+            LEFT JOIN users u ON sed.engineer_id = u.id
+            WHERE sed.site_id IN ({placeholders}) AND sed.is_active = TRUE
+            ORDER BY sed.site_id, sed.upload_date DESC
+        """, site_ids)
+        eng_docs_map = defaultdict(list)
+        for row in eng_docs_raw:
+            eng_docs_map[str(row['site_id'])].append(row)
+
+        # ── 7. Extra costs — one query ────────────────────────────────────────
+        extra_costs_raw = fetch_all(f"""
+            SELECT site_id, extra_cost, extra_cost_notes, entry_date
+            FROM labour_entries
+            WHERE site_id IN ({placeholders}) AND extra_cost > 0
+            ORDER BY site_id, entry_date DESC
+        """, site_ids)
+        extra_costs_map = defaultdict(list)
+        for row in extra_costs_raw:
+            extra_costs_map[str(row['site_id'])].append(row)
+
+        # ── Assemble response in Python ───────────────────────────────────────
+        def _url(file_url):
+            if not file_url:
+                return file_url
+            return file_url if file_url.startswith(('http', '/media/', '/')) \
+                else f"{settings.MEDIA_URL}{file_url}"
+
         site_details = []
         for site in sites:
-            site_id = site['site_id']
-            
-            # Get labour count summary
-            labour_summary = fetch_one("""
-                SELECT 
-                    COUNT(DISTINCT entry_date) as total_days,
-                    SUM(labour_count) as total_labour_count,
-                    MAX(entry_date) as last_entry_date
-                FROM labour_entries
-                WHERE site_id = %s
-            """, (site_id,))
-            
-            # Get recent labour entries (last 7 days)
-            recent_labour = fetch_all("""
-                SELECT 
-                    le.entry_date,
-                    le.labour_type,
-                    le.labour_count,
-                    le.day_of_week,
-                    u.full_name as supervisor_name
-                FROM labour_entries le
-                LEFT JOIN users u ON le.supervisor_id = u.id
-                WHERE le.site_id = %s
-                ORDER BY le.entry_date DESC
-                LIMIT 7
-            """, (site_id,))
-            
-            # Get supervisor photos
-            photos = fetch_all("""
-                SELECT 
-                    sp.id,
-                    sp.image_url,
-                    sp.time_of_day,
-                    sp.description,
-                    sp.upload_date,
-                    u.full_name as supervisor_name
-                FROM site_photos sp
-                LEFT JOIN users u ON sp.uploaded_by = u.id
-                WHERE sp.site_id = %s
-                ORDER BY sp.upload_date DESC
-                LIMIT 20
-            """, (site_id,))
-            
-            # Get architect documents (floor plans, agreements)
-            architect_docs = fetch_all("""
-                SELECT 
-                    ad.id,
-                    ad.document_type,
-                    ad.title,
-                    ad.description,
-                    ad.file_url,
-                    ad.file_name,
-                    ad.file_size,
-                    ad.upload_date,
-                    u.full_name as architect_name
-                FROM architect_documents ad
-                LEFT JOIN users u ON ad.architect_id = u.id
-                WHERE ad.site_id = %s AND ad.is_active = TRUE
-                ORDER BY ad.upload_date DESC
-            """, (site_id,))
-            
-            # Get site engineer documents (project files)
-            engineer_docs = fetch_all("""
-                SELECT 
-                    sed.id,
-                    sed.document_type,
-                    sed.title,
-                    sed.description,
-                    sed.file_url,
-                    sed.file_name,
-                    sed.file_size,
-                    sed.upload_date,
-                    u.full_name as engineer_name
-                FROM site_engineer_documents sed
-                LEFT JOIN users u ON sed.engineer_id = u.id
-                WHERE sed.site_id = %s AND sed.is_active = TRUE
-                ORDER BY sed.upload_date DESC
-            """, (site_id,))
-            
-            # Get extra requirements/costs
-            extra_costs = fetch_all("""
-                SELECT 
-                    le.extra_cost,
-                    le.extra_cost_notes,
-                    le.entry_date
-                FROM labour_entries le
-                WHERE le.site_id = %s AND le.extra_cost > 0
-                ORDER BY le.entry_date DESC
-            """, (site_id,))
-            
-            total_extra_cost = sum(float(ec['extra_cost'] or 0) for ec in extra_costs)
-            
-            # Format site details
-            site_name = site.get('site_name') or ''
+            sid          = str(site['site_id'])
+            summary      = labour_summary_map.get(sid, {})
+            extra_costs  = extra_costs_map.get(sid, [])
+            site_name    = site.get('site_name') or ''
             customer_name = site.get('customer_name') or ''
-            display_name = f"{customer_name} {site_name}" if customer_name and site_name else (customer_name or site_name or f"Site {str(site_id)[:8]}")
-            
+            display_name = (
+                f"{customer_name} {site_name}".strip()
+                if customer_name or site_name
+                else f"Site {sid[:8]}"
+            )
+
             site_details.append({
-                'site_id': str(site_id),
-                'site_name': site_name,
+                'site_id':       sid,
+                'site_name':     site_name,
                 'customer_name': customer_name,
-                'display_name': display_name,
-                'area': site.get('area') or '',
-                'street': site.get('street') or '',
-                'status': site.get('status') or 'ACTIVE',
+                'display_name':  display_name,
+                'area':          site.get('area') or '',
+                'street':        site.get('street') or '',
+                'status':        site.get('status') or 'ACTIVE',
                 'assigned_date': site['assigned_date'].strftime('%Y-%m-%d') if site.get('assigned_date') else None,
-                'created_at': site['created_at'].strftime('%Y-%m-%d') if site.get('created_at') else None,
-                
-                # Labour summary
+                'created_at':    site['created_at'].strftime('%Y-%m-%d') if site.get('created_at') else None,
+
                 'labour_summary': {
-                    'total_days': labour_summary['total_days'] or 0,
-                    'total_labour_count': labour_summary['total_labour_count'] or 0,
-                    'last_entry_date': labour_summary['last_entry_date'].strftime('%Y-%m-%d') if labour_summary.get('last_entry_date') else None,
+                    'total_days':        summary.get('total_days') or 0,
+                    'total_labour_count': summary.get('total_labour_count') or 0,
+                    'last_entry_date':   summary['last_entry_date'].strftime('%Y-%m-%d')
+                                         if summary.get('last_entry_date') else None,
                 },
-                
-                # Recent labour entries
+
                 'recent_labour': [
                     {
-                        'entry_date': le['entry_date'].strftime('%Y-%m-%d'),
-                        'labour_type': le['labour_type'],
-                        'labour_count': le['labour_count'],
-                        'day_of_week': le['day_of_week'],
+                        'entry_date':      le['entry_date'].strftime('%Y-%m-%d'),
+                        'labour_type':     le['labour_type'],
+                        'labour_count':    le['labour_count'],
+                        'day_of_week':     le['day_of_week'],
                         'supervisor_name': le.get('supervisor_name') or 'Unknown',
                     }
-                    for le in recent_labour
+                    for le in recent_labour_map.get(sid, [])
                 ],
-                
-                # Photos
+
                 'photos': [
                     {
-                        'id': str(p['id']),
-                        'photo_url': p['image_url'] if p['image_url'].startswith(('http', '/media/', '/')) else f"{settings.MEDIA_URL}{p['image_url']}",
-                        'time_of_day': p['time_of_day'],
-                        'description': p.get('description') or '',
-                        'uploaded_date': p['upload_date'].strftime('%Y-%m-%d') if p.get('upload_date') else None,
+                        'id':              str(p['id']),
+                        'photo_url':       _url(p['image_url']),
+                        'time_of_day':     p['time_of_day'],
+                        'description':     p.get('description') or '',
+                        'uploaded_date':   p['upload_date'].strftime('%Y-%m-%d') if p.get('upload_date') else None,
                         'supervisor_name': p.get('supervisor_name') or 'Unknown',
                     }
-                    for p in photos
+                    for p in photos_map.get(sid, [])
                 ],
-                
-                # Architect documents (floor plans, agreements)
+
                 'architect_documents': [
                     {
-                        'id': str(d['id']),
+                        'id':            str(d['id']),
                         'document_type': d['document_type'],
+                        'title':         d['title'],
+                        'description':   d.get('description') or '',
+                        'file_url':      _url(d['file_url']),
+                        'file_name':     d['file_name'],
+                        'file_size':     d.get('file_size'),
+                        'upload_date':   d['upload_date'].strftime('%Y-%m-%d') if d.get('upload_date') else None,
+                        'architect_name': d.get('architect_name') or 'Unknown',
+                    }
+                    for d in arch_docs_map.get(sid, [])
+                ],
+
+                'engineer_documents': [
+                    {
+                        'id':            str(d['id']),
+                        'document_type': d['document_type'],
+                        'title':         d['title'],
+                        'description':   d.get('description') or '',
+                        'file_url':      _url(d['file_url']),
+                        'file_name':     d['file_name'],
+                        'file_size':     d.get('file_size'),
+                        'upload_date':   d['upload_date'].strftime('%Y-%m-%d') if d.get('upload_date') else None,
+                        'engineer_name': d.get('engineer_name') or 'Unknown',
+                    }
+                    for d in eng_docs_map.get(sid, [])
+                ],
+
+                'extra_requirements': {
+                    'total_amount': sum(float(ec.get('extra_cost') or 0) for ec in extra_costs),
+                    'entries': [
+                        {
+                            'amount': float(ec.get('extra_cost') or 0),
+                            'notes':  ec.get('extra_cost_notes') or '',
+                            'date':   ec['entry_date'].strftime('%Y-%m-%d') if ec.get('entry_date') else None,
+                        }
+                        for ec in extra_costs
+                    ],
+                },
+            })
+
+        return Response({
+            'success': True,
+            'sites':   site_details,
+            'count':   len(site_details),
+        })
                         'title': d['title'],
                         'description': d.get('description') or '',
                         'file_url': d['file_url'] if d['file_url'].startswith(('http', '/media/', '/')) else f"{settings.MEDIA_URL}{d['file_url']}",
@@ -266,9 +328,7 @@ def get_client_site_details(request):
         })
         
     except Exception as e:
-        print(f"Error fetching client site details: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error("Error fetching client site details: %s", e)
         return Response({
             'error': f'Error fetching site details: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
