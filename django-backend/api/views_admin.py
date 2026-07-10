@@ -1,6 +1,8 @@
 """
 Admin-specific views for enhanced features (Fixed for UUID)
 """
+import logging
+
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,6 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import connection
 from datetime import datetime, timedelta
 from .authentication import JWTAuthentication
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_all(query, params=None):
@@ -185,52 +189,62 @@ def get_bills_data(request, site_id):
 # ============================================
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_profit_loss_data(request, site_id):
-    """Get complete profit/loss data for a site"""
+    """Get complete profit/loss data for a site (Admin only)."""
     try:
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         # Get site metrics
         metrics = fetch_one("""
-            SELECT s.site_name, sm.built_up_area, sm.project_value, 
+            SELECT s.site_name, sm.built_up_area, sm.project_value,
                    sm.total_cost, sm.profit_loss
             FROM sites s
             LEFT JOIN site_metrics sm ON s.id = sm.site_id
             WHERE s.id = %s
         """, [site_id])
-        
+
         if not metrics:
-            return Response({
-                'error': 'Site not found'
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        # Get labour cost (from labour entries - we don't have salary data, so estimate)
-        labour_count = fetch_one("""
-            SELECT COALESCE(SUM(le.labour_count), 0) as total_labour
+            return Response({'error': 'Site not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Calculate actual labour cost using configured salary rates per labour type.
+        # Falls back to 0 for labour types that have no rate configured.
+        # This replaces the old hardcoded ₹500 estimate (Issue-15).
+        labour_cost_row = fetch_one("""
+            SELECT COALESCE(SUM(le.labour_count * COALESCE(lsr.daily_rate, 0)), 0)
+                   AS total_labour_cost
             FROM labour_entries le
+            LEFT JOIN labour_salary_rates lsr
+                   ON lsr.site_id = le.site_id
+                  AND lsr.labour_type = le.labour_type
+                  AND lsr.is_active = TRUE
+                  AND (lsr.effective_to IS NULL OR lsr.effective_to >= le.entry_date)
             WHERE le.site_id = %s
         """, [site_id])
-        
-        # Estimate labour cost (assuming ₹500 per labour per day)
-        total_labour_cost = (labour_count['total_labour'] or 0) * 500
-        
-        # Get material cost
+
+        total_labour_cost = float(labour_cost_row['total_labour_cost']) if labour_cost_row else 0.0
+
+        # Get material cost from bills
         material_cost = fetch_one("""
-            SELECT COALESCE(SUM(mb.total_amount), 0) as total_material_cost
+            SELECT COALESCE(SUM(mb.total_amount), 0) AS total_material_cost
             FROM material_bills mb
             WHERE mb.site_id = %s AND mb.is_active = TRUE
         """, [site_id])
-        
+
         return Response({
-            'site_name': metrics['site_name'],
+            'site_name':     metrics['site_name'],
             'built_up_area': float(metrics['built_up_area']) if metrics['built_up_area'] else 0,
             'project_value': float(metrics['project_value']) if metrics['project_value'] else 0,
-            'total_cost': float(metrics['total_cost']) if metrics['total_cost'] else 0,
-            'profit_loss': float(metrics['profit_loss']) if metrics['profit_loss'] else 0,
-            'labour_cost': float(total_labour_cost),
-            'material_cost': float(material_cost['total_material_cost']) if material_cost else 0
+            'total_cost':    float(metrics['total_cost']) if metrics['total_cost'] else 0,
+            'profit_loss':   float(metrics['profit_loss']) if metrics['profit_loss'] else 0,
+            'labour_cost':   total_labour_cost,
+            'material_cost': float(material_cost['total_material_cost']) if material_cost else 0,
         }, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
-        print(f"Error in get_profit_loss_data: {e}")
+        logger.error("Error in get_profit_loss_data: %s", e)
         return Response({
             'error': f'Failed to fetch P/L data: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
