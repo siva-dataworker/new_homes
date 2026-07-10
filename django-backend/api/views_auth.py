@@ -11,7 +11,10 @@ from django.utils import timezone
 from .authentication import JWTAuthentication
 from .jwt_utils import generate_access_token
 from .database import execute_query, fetch_one, fetch_all
+import logging
 import uuid
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
@@ -126,11 +129,8 @@ def login(request):
     try:
         username = request.data.get('username')
         password = request.data.get('password')
-        
-        print(f"[LOGIN] Attempting login for username: {username}")
-        
+
         if not username or not password:
-            print("[LOGIN] Missing username or password")
             return Response({
                 'error': 'Username and password are required'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -145,19 +145,14 @@ def login(request):
         """, (username,))
         
         if not user:
-            print(f"[LOGIN] User not found: {username}")
             return Response({
                 'error': 'Invalid username or password'
             }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        print(f"[LOGIN] User found: {username}, status: {user['status']}, active: {user['is_active']}")
-        
+
         # Check password
         password_valid = check_password(password, user['password_hash'])
-        print(f"[LOGIN] Password valid: {password_valid}")
-        
+
         if not password_valid:
-            print(f"[LOGIN] Invalid password for user: {username}")
             return Response({
                 'error': 'Invalid username or password'
             }, status=status.HTTP_401_UNAUTHORIZED)
@@ -189,8 +184,10 @@ def login(request):
         # Generate JWT token
         role_name = user.get('role_name')
         if not role_name:
-            print(f"[LOGIN] ⚠️ WARNING: User {username} has no role assigned. role_id={user.get('role_id')}")
-            role_name = 'Supervisor'  # Default to Supervisor if no role found
+            # Fail closed — a broken account must NOT silently get Supervisor access
+            return Response({
+                'error': 'Account configuration error. Contact admin to assign a role.'
+            }, status=status.HTTP_403_FORBIDDEN)
 
         access_token = generate_access_token({
             'user_id': str(user['id']),
@@ -694,7 +691,7 @@ def get_client_sites(request):
         })
         
     except Exception as e:
-        print(f"Error fetching client sites: {e}")
+        logger.error("Error fetching client sites: %s", e)
         return Response({
             'error': f'Error fetching sites: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
