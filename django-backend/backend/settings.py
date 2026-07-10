@@ -17,9 +17,14 @@ if sys.stderr.encoding != 'utf-8':
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security settings
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+# SECRET_KEY must be set in .env - no default to prevent insecure startup
+SECRET_KEY = config('SECRET_KEY')
+
+# DEBUG must be explicitly set in .env - defaults to False (safe for production)
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+# ALLOWED_HOSTS must be set in .env - no wildcard in production
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -119,8 +124,15 @@ FILE_UPLOAD_MAX_NUMBER_FIELDS = 1000    # Allow many form fields
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings - allow Flutter app
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS settings - restrict to known origins only
+# Set CORS_ALLOWED_ORIGINS in .env as comma-separated URLs
+# e.g. CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://api.yourdomain.com
+_cors_origins = config('CORS_ALLOWED_ORIGINS', default='')
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+else:
+    # Development fallback only - never use CORS_ALLOW_ALL_ORIGINS=True in production
+    CORS_ALLOWED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 CORS_ALLOW_CREDENTIALS = True
 
 # REST Framework settings
@@ -139,6 +151,7 @@ REST_FRAMEWORK = {
 }
 
 # JWT Settings
-JWT_SECRET_KEY = config('JWT_SECRET_KEY', default='change-this-secret-key-in-production')
+# JWT_SECRET_KEY must be set in .env - no default to prevent insecure startup
+JWT_SECRET_KEY = config('JWT_SECRET_KEY')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_DAYS = 7
