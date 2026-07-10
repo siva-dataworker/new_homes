@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../utils/app_colors.dart';
-import '../services/supabase_service.dart';
-import 'role_selection_screen.dart';
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 
 class ProfileFormScreen extends StatefulWidget {
   final String? phoneNumber;
@@ -52,24 +52,28 @@ class _ProfileFormScreenState extends State<ProfileFormScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final supabase = SupabaseService();
+      final authService = AuthService();
 
-      // Create user profile in Supabase
-      await supabase.createUserProfile(
-        userId: widget.userId,
+      // Update profile via Django backend (Strategy 2)
+      final result = await authService.updateProfile(
         name: _nameController.text.trim(),
-        phoneNumber: widget.phoneNumber ?? '',
-        role: 'supervisor', // Default role, can be changed later
+        email: widget.email,
+        phone: widget.phoneNumber ?? '',
       );
 
-      if (mounted) {
+      if (!mounted) return;
+
+      if (result['success'] == true) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => const RoleSelectionScreen(),
+            builder: (context) => const LoginScreen(),
           ),
           (route) => false,
         );
+      } else {
+        setState(() => _isLoading = false);
+        _showErrorDialog(result['error'] ?? 'Failed to save profile');
       }
     } catch (e) {
       setState(() => _isLoading = false);

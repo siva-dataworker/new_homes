@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-// Firebase imports kept for safety (not used)
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/supervisor_dashboard_feed.dart';
 import 'screens/admin_dashboard.dart';
@@ -30,18 +27,6 @@ import 'providers/client_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Firebase initialization removed - using custom auth
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
-  
-  // Supabase initialization removed - using Django backend
-  // await SupabaseService.initialize(
-  //   supabaseUrl: SupabaseConfig.supabaseUrl,
-  //   supabaseAnonKey: SupabaseConfig.supabaseAnonKey,
-  // );
-  
   runApp(const MyApp());
 }
 
