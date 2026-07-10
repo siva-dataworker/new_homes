@@ -295,30 +295,17 @@ def get_roles(request):
 # ============================================
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_pending_users(request):
     """
     Get all pending user approvals (Admin only)
-    
     GET /api/admin/pending-users/
-    
-    Response:
-    {
-        "users": [
-            {
-                "id": "uuid",
-                "username": "ravi_kumar",
-                "email": "ravi@gmail.com",
-                "phone": "9876543210",
-                "full_name": "Ravi Kumar",
-                "role": "Supervisor",
-                "created_at": "2025-12-20T10:30:00Z"
-            }
-        ]
-    }
     """
     try:
-        # TODO: Add admin role check
-        
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         users = fetch_all("""
             SELECT u.id, u.username, u.email, u.phone, u.full_name, 
                    r.role_name, u.created_at
@@ -350,20 +337,17 @@ def get_pending_users(request):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_users(request):
     """
     Get all users (Admin only)
-    
     GET /api/admin/all-users/
-    
-    Response:
-    {
-        "users": [...]
-    }
     """
     try:
-        # TODO: Add admin role check
-        
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         users = fetch_all("""
             SELECT u.id, u.username, u.email, u.phone, u.full_name, 
                    r.role_name, u.status, u.is_active, u.created_at, u.last_login
@@ -397,30 +381,28 @@ def get_all_users(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def approve_user(request, user_id):
     """
     Approve a pending user (Admin only)
-    
     POST /api/admin/approve-user/<user_id>/
-    
-    Response:
-    {
-        "message": "User approved successfully"
-    }
     """
     try:
-        # TODO: Add admin role check
-        # admin_id = request.user['user_id']
-        
-        execute_query("""
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
+        success = execute_query("""
             UPDATE users 
             SET status = 'APPROVED', approved_at = %s
             WHERE id = %s AND status = 'PENDING'
         """, (timezone.now(), user_id))
-        
-        return Response({
-            'message': 'User approved successfully'
-        }, status=status.HTTP_200_OK)
+
+        if not success:
+            return Response({'error': 'Failed to approve user — database update failed'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': 'User approved successfully'}, status=status.HTTP_200_OK)
         
     except Exception as e:
         return Response({
@@ -429,29 +411,28 @@ def approve_user(request, user_id):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def reject_user(request, user_id):
     """
     Reject a pending user (Admin only)
-    
     POST /api/admin/reject-user/<user_id>/
-    
-    Response:
-    {
-        "message": "User rejected successfully"
-    }
     """
     try:
-        # TODO: Add admin role check
-        
-        execute_query("""
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
+        success = execute_query("""
             UPDATE users 
             SET status = 'REJECTED'
             WHERE id = %s AND status = 'PENDING'
         """, (user_id,))
-        
-        return Response({
-            'message': 'User rejected successfully'
-        }, status=status.HTTP_200_OK)
+
+        if not success:
+            return Response({'error': 'Failed to reject user — database update failed'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': 'User rejected successfully'}, status=status.HTTP_200_OK)
         
     except Exception as e:
         return Response({
@@ -460,6 +441,8 @@ def reject_user(request, user_id):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def admin_create_user(request):
     """
     Admin creates a user directly with APPROVED status.
@@ -467,6 +450,9 @@ def admin_create_user(request):
     Body: { username, email, phone, full_name, password, role, site_ids (optional for Client role) }
     """
     try:
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         username  = request.data.get('username', '').strip()
         email     = request.data.get('email', '').strip()
         phone     = request.data.get('phone', '').strip()
@@ -528,6 +514,8 @@ def admin_create_user(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def admin_create_admin(request):
     """
     Admin creates another admin account.
@@ -535,6 +523,9 @@ def admin_create_admin(request):
     Body: { username, email, phone, full_name, password }
     """
     try:
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         username  = request.data.get('username', '').strip()
         email     = request.data.get('email', '').strip()
         phone     = request.data.get('phone', '').strip()
@@ -577,6 +568,8 @@ def admin_create_admin(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def admin_create_role(request):
     """
     Admin creates a new role.
@@ -584,6 +577,9 @@ def admin_create_role(request):
     Body: { role_name }
     """
     try:
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         role_name = request.data.get('role_name', '').strip()
 
         if not role_name:
@@ -609,12 +605,17 @@ def admin_create_role(request):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_roles(request):
     """
-    Get all roles including Admin.
+    Get all roles including Admin. (Admin only)
     GET /api/admin/roles/
     """
     try:
+        if request.user.get('role') != 'Admin':
+            return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+
         roles = fetch_all("SELECT id, role_name FROM roles ORDER BY role_name")
         return Response({
             'roles': [{'id': r['id'], 'role_name': r['role_name']} for r in roles]
