@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
@@ -8,7 +9,7 @@ class BudgetService {
   BudgetService._internal();
 
   final _authService = AuthService();
-  static const String baseUrl = 'http://187.127.164.22/api';
+  static String get baseUrl => AppConfig.baseUrl;
 
   /// Set budget for a site
   Future<Map<String, dynamic>?> setBudget(String siteId, double budgetAmount) async {

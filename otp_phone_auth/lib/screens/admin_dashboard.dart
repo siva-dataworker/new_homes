@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -41,7 +42,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   String _profilePhone = '';
 
   // Sites tab state
-  static const String _sitesBaseUrl = 'http://187.127.164.22/api';
+  static String get _sitesBaseUrl => AppConfig.baseUrl;
   List<String> _areas = [];
   List<String> _streets = [];
   List<Map<String, dynamic>> _sites = [];
@@ -3108,7 +3109,7 @@ class _AdminStoryTab extends StatefulWidget {
 
 class _AdminStoryTabState extends State<_AdminStoryTab> {
   final _service = ConstructionService();
-  static const _baseUrl = 'http://187.127.164.22';
+  static String get _baseUrl => AppConfig.mediaBaseUrl;
   static const _kViewedKey = 'story_viewed_timestamps'; // SharedPreferences key
 
   // All photos grouped by site

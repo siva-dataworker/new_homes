@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -642,7 +643,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
   Widget _buildUploadedPhotoThumbnail(Map<String, dynamic> photo) {
     final imageUrl = photo['image_url'].toString().startsWith('http')
         ? photo['image_url']
-        : 'http://187.127.164.22${photo['image_url']}';
+        : '${AppConfig.mediaBaseUrl}${photo['image_url']}';
     
     final uploadDate = photo['upload_date'] ?? '';
     

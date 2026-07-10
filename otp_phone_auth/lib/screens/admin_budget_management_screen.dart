@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -2833,7 +2834,7 @@ class _PhotoTabsSectionState extends State<PhotoTabsSection>
     final imageUrl = rawUrl.startsWith('http')
         ? rawUrl
         : rawUrl.isNotEmpty
-            ? 'http://187.127.164.22$rawUrl'
+            ? '${AppConfig.mediaBaseUrl}$rawUrl'
             : '';
     final uploadDate = photo['upload_date'] ?? photo['update_date'] ?? '';
     final timeOfDay = photo['time_of_day'] ?? '';
@@ -3094,7 +3095,7 @@ class _AdminDocumentTabState extends State<_AdminDocumentTab> {
   Future<void> _openDocument(String fileUrl) async {
     final url = fileUrl.startsWith('http')
         ? fileUrl
-        : 'http://187.127.164.22$fileUrl';
+        : '${AppConfig.mediaBaseUrl}$fileUrl';
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -3327,7 +3328,7 @@ class _AdminBillsTabState extends State<_AdminBillsTab>
 
   Future<void> _openDocument(String? fileUrl) async {
     if (fileUrl == null || fileUrl.isEmpty) return;
-    final url = fileUrl.startsWith('http') ? fileUrl : 'http://187.127.164.22$fileUrl';
+    final url = fileUrl.startsWith('http') ? fileUrl : '${AppConfig.mediaBaseUrl}$fileUrl';
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

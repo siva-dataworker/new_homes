@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
@@ -193,7 +194,7 @@ class _SitePhotoGalleryScreenState extends State<SitePhotoGalleryScreen> {
     // Construct full image URL
     final imageUrl = photo['image_url'].toString().startsWith('http')
         ? photo['image_url']
-        : 'http://187.127.164.22${photo['image_url']}';
+        : '${AppConfig.mediaBaseUrl}${photo['image_url']}';
 
     return GestureDetector(
       onTap: () => _openFullScreen(index),
@@ -404,7 +405,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
               // Construct full image URL
               final imageUrl = widget.photos[index]['image_url'].toString().startsWith('http')
                   ? widget.photos[index]['image_url']
-                  : 'http://187.127.164.22${widget.photos[index]['image_url']}';
+                  : '${AppConfig.mediaBaseUrl}${widget.photos[index]['image_url']}';
 
               return InteractiveViewer(
                 minScale: 0.5,

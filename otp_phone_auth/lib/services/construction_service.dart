@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -12,8 +13,8 @@ class ConstructionService {
   ConstructionService._internal();
 
   final _authService = AuthService();
-  static const String baseUrl = 'http://187.127.164.22/api';
-  static const String mediaBaseUrl = 'http://187.127.164.22'; // For media files
+  static String get baseUrl => AppConfig.baseUrl;
+  static String get mediaBaseUrl => AppConfig.mediaBaseUrl; // For media files
 
   // Helper method to convert relative image URLs to full URLs
   static String getFullImageUrl(String? relativeUrl) {

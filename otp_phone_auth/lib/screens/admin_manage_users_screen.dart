@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
@@ -97,7 +98,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
     try {
       final token = await _authService.getToken();
       final response = await http.get(
-        Uri.parse('http://187.127.164.22/api/admin/pending-users/'),
+        Uri.parse('${AppConfig.baseUrl}/admin/pending-users/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token ?? ''}',
@@ -149,7 +150,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
     try {
       final token = await _authService.getToken();
       final response = await http.get(
-        Uri.parse('http://187.127.164.22/api/admin/all-users/'),
+        Uri.parse('${AppConfig.baseUrl}/admin/all-users/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token ?? ''}',
@@ -184,7 +185,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
     try {
       final token = await _authService.getToken();
       final response = await http.post(
-        Uri.parse('http://187.127.164.22/api/admin/approve-user/$userId/'),
+        Uri.parse('${AppConfig.baseUrl}/admin/approve-user/$userId/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token ?? ''}',
@@ -219,7 +220,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
     try {
       final token = await _authService.getToken();
       final response = await http.post(
-        Uri.parse('http://187.127.164.22/api/admin/reject-user/$userId/'),
+        Uri.parse('${AppConfig.baseUrl}/admin/reject-user/$userId/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${token ?? ''}',

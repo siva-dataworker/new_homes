@@ -1,10 +1,11 @@
+import '../config/app_config.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class SiteEngineerService {
-  final String baseUrl = 'http://187.127.164.22/api';
+  String get baseUrl => AppConfig.baseUrl;
   final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _getHeaders() async {

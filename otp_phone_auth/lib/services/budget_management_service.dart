@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
@@ -8,7 +9,7 @@ class BudgetManagementService {
   BudgetManagementService._internal();
 
   final _authService = AuthService();
-  static const String baseUrl = 'http://187.127.164.22/api';
+  static String get baseUrl => AppConfig.baseUrl;
 
   // Cache for global labour rates — loaded once, cleared when admin updates a rate
   static List<Map<String, dynamic>>? _globalRatesCache;

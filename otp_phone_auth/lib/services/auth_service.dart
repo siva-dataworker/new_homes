@@ -1,3 +1,4 @@
+import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +9,7 @@ class AuthService {
   AuthService._internal();
 
   // Django backend URL
-  static const String baseUrl = 'http://187.127.164.22/api';
+  static String get baseUrl => AppConfig.baseUrl;
   static const Duration requestTimeout = Duration(seconds: 10);
 
   String? _token;
