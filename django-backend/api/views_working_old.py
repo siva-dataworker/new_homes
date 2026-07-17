@@ -4,6 +4,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.db import connection
 
 from .models import (
@@ -47,87 +48,102 @@ class RoleViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for roles (read-only)"""
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet for users"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class SiteViewSet(viewsets.ModelViewSet):
     """ViewSet for sites"""
     queryset = Site.objects.all()
     serializer_class = SiteSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class MaterialMasterViewSet(viewsets.ModelViewSet):
     """ViewSet for material master"""
     queryset = MaterialMaster.objects.all()
     serializer_class = MaterialMasterSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class DailySiteReportViewSet(viewsets.ModelViewSet):
     """ViewSet for daily site reports"""
     queryset = DailySiteReport.objects.all()
     serializer_class = DailySiteReportSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class DailyLabourSummaryViewSet(viewsets.ModelViewSet):
     """ViewSet for daily labour summary"""
     queryset = DailyLabourSummary.objects.all()
     serializer_class = DailyLabourSummarySerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class DailySalaryEntryViewSet(viewsets.ModelViewSet):
     """ViewSet for daily salary entries"""
     queryset = DailySalaryEntry.objects.all()
     serializer_class = DailySalaryEntrySerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class DailyMaterialBalanceViewSet(viewsets.ModelViewSet):
     """ViewSet for daily material balance"""
     queryset = DailyMaterialBalance.objects.all()
     serializer_class = DailyMaterialBalanceSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class MaterialBillViewSet(viewsets.ModelViewSet):
     """ViewSet for material bills"""
     queryset = MaterialBill.objects.all()
     serializer_class = MaterialBillSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class WorkActivityViewSet(viewsets.ModelViewSet):
     """ViewSet for work activities"""
     queryset = WorkActivity.objects.all()
     serializer_class = WorkActivitySerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
     """ViewSet for notifications"""
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class ComplaintViewSet(viewsets.ModelViewSet):
     """ViewSet for complaints"""
     queryset = Complaint.objects.all()
     serializer_class = ComplaintSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class ComplaintActionViewSet(viewsets.ModelViewSet):
     """ViewSet for complaint actions"""
     queryset = ComplaintAction.objects.all()
     serializer_class = ComplaintActionSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for audit logs (read-only)"""
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
 
 
 class AdminRoleChangeLogViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for admin role change logs (read-only)"""
     queryset = AdminRoleChangeLog.objects.all()
     serializer_class = AdminRoleChangeLogSerializer
+    permission_classes = [IsAuthenticated]  # ISSUE-30: Added authentication
