@@ -108,3 +108,37 @@ data/
 
 # Documentation (optional - you can keep these)
 # *.md
+
+# Backup files - never commit to source control
+*.backup
+*.backup2
+*.backup_*
+.reload_trigger
+
+# Python - Generated files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Django - Generated files
+*.log
+*.sqlite
+*.db
+
+# IDE - Generated files
+.idea/
+.vscode/
+*.sublime-*
+.DS_Store
+
+# Unnecessary folders
+flutter_application_1/
+spring-backend/
+.kiro/
+.claude/
+data/
+*.zip
+*.tar.gz
+*.rar

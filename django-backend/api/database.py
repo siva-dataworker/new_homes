@@ -212,3 +212,63 @@ def fetch_all(query, params=None):
     except Exception as e:
         logger.error("fetch_all failed: %s\n%s", e, traceback.format_exc())
         return []
+
+# ── Pagination Helpers ────────────────────────────────────────────────────────
+# ISSUE-19 fix: Pagination support for list endpoints
+
+def paginate_query(query, params=None, limit=20, offset=0):
+    """
+    Add pagination to a query and return paginated results.
+    
+    Args:
+        query: Original SELECT query (without LIMIT/OFFSET)
+        params: Query parameters
+        limit: Number of rows per page (default 20)
+        offset: Number of rows to skip (default 0)
+    
+    Returns:
+        tuple: (results_list, total_count, has_more)
+    """
+    # Get total count (remove ORDER BY for count query)
+    count_query = f"SELECT COUNT(*) FROM ({query}) as subquery"
+    try:
+        total = fetch_one(count_query, params)
+        total_count = total[0] if total else 0
+    except:
+        total_count = 0
+    
+    # Add pagination to original query
+    paginated_query = f"{query} LIMIT %s OFFSET %s"
+    paginated_params = (params or ()) + (limit, offset)
+    
+    results = fetch_all(paginated_query, paginated_params)
+    has_more = len(results) == limit and (offset + limit) < total_count
+    
+    return results, total_count, has_more
+
+
+def get_pagination_info(total_count, limit, offset):
+    """
+    Generate pagination metadata.
+    
+    Args:
+        total_count: Total number of items
+        limit: Items per page
+        offset: Current offset
+    
+    Returns:
+        dict: Pagination metadata
+    """
+    page = (offset // limit) + 1
+    total_pages = (total_count + limit - 1) // limit if total_count > 0 else 1
+    
+    return {
+        'current_page': page,
+        'per_page': limit,
+        'total_items': total_count,
+        'total_pages': total_pages,
+        'has_next': offset + limit < total_count,
+        'has_prev': offset > 0,
+        'next_offset': offset + limit if offset + limit < total_count else None,
+        'prev_offset': offset - limit if offset > 0 else None
+    }

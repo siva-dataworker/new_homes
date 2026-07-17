@@ -181,7 +181,7 @@ def login(request):
             (timezone.now(), user['id'])
         )
         
-        # Generate JWT token
+        # Generate JWT token pair (access + refresh)
         role_name = user.get('role_name')
         if not role_name:
             # Fail closed — a broken account must NOT silently get Supervisor access
@@ -189,15 +189,37 @@ def login(request):
                 'error': 'Account configuration error. Contact admin to assign a role.'
             }, status=status.HTTP_403_FORBIDDEN)
 
-        access_token = generate_access_token({
+        from .jwt_utils import generate_token_pair, REFRESH_TOKEN_EXPIRE_DAYS
+        from datetime import datetime, timedelta
+        import uuid
+        
+        user_data = {
             'user_id': str(user['id']),
             'username': user['username'],
             'email': user['email'],
             'role': role_name
-        })
+        }
+        
+        tokens = generate_token_pair(user_data)
+        
+        # Store refresh token in database
+        refresh_token_id = tokens['refresh_token_id']
+        expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+        
+        # Optional: capture device/IP info from request
+        device_info = request.headers.get('User-Agent', 'Unknown')[:200]
+        ip_address = request.META.get('REMOTE_ADDR')
+        
+        execute_query("""
+            INSERT INTO refresh_tokens (id, user_id, token_id, expires_at, device_info, ip_address)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (str(uuid.uuid4()), user['id'], refresh_token_id, expires_at, device_info, ip_address))
         
         return Response({
-            'access_token': access_token,
+            'access_token': tokens['access_token'],
+            'refresh_token': tokens['refresh_token'],
+            'expires_in': tokens['expires_in'],
+            'token_type': 'Bearer',
             'user': {
                 'id': str(user['id']),
                 'username': user['username'],

@@ -15,17 +15,6 @@ import uuid
 import pytz
 
 
-# TEST ENDPOINT - NO AUTHENTICATION to isolate the issue
-@api_view(['POST'])
-def test_material_balance(request):
-    """Test endpoint without authentication"""
-    print(f'✅ [TEST] Test endpoint called!')
-    site_id = request.data.get('site_id')
-    materials = request.data.get('materials', [])
-    print(f'✅ [TEST] site_id: {site_id}, materials count: {len(materials)}')
-    return Response({'message': 'Test endpoint works!', 'received_site_id': site_id, 'received_materials': materials}, status=status.HTTP_200_OK)
-
-
 # ============================================
 # COMMON APIS (ALL ROLES)
 # ============================================

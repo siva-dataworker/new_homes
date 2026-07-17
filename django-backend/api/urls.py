@@ -14,6 +14,7 @@ from . import views_export
 from . import views_client
 from . import views_notifications
 from . import views_cash_and_salary
+from . import views_refresh_token  # ISSUE-37 fix: refresh token management
 
 # Import old working ViewSets
 from .views_working_old import (
@@ -55,6 +56,12 @@ urlpatterns = [
     path('auth/login/', views_auth.login, name='login'),
     path('auth/status/', views_auth.check_approval_status, name='check-status'),
     path('auth/roles/', views_auth.get_roles, name='get-roles'),
+    
+    # ISSUE-37 fix: JWT refresh token endpoints
+    path('auth/refresh/', views_refresh_token.refresh_access_token, name='refresh-token'),
+    path('auth/logout/', views_refresh_token.logout, name='logout'),
+    path('auth/sessions/', views_refresh_token.list_active_sessions, name='list-sessions'),
+    path('auth/sessions/<uuid:session_id>/revoke/', views_refresh_token.revoke_session, name='revoke-session'),
     
     # Admin endpoints - User Management
     path('admin/pending-users/', views_auth.get_pending_users, name='pending-users'),
@@ -161,7 +168,6 @@ urlpatterns = [
     # Supervisor endpoints
     path('construction/labour/', views_construction.submit_labour_count, name='submit-labour'),
     path('construction/check-entry-lock/', views_construction.check_entry_lock, name='check-entry-lock'),
-    path('construction/test-material/', views_construction.test_material_balance, name='test-material-balance'),
     path('construction/submit-material-balance/', views_construction.submit_material_balance, name='submit-material-balance'),
     path('construction/today-entries/', views_construction.get_today_entries, name='get-today-entries'),
     path('construction/today-entries-supervisor/', views_construction.get_today_entries_for_supervisor, name='get-today-entries-supervisor'),

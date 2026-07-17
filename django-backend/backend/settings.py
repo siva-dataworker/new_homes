@@ -26,6 +26,18 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # ALLOWED_HOSTS must be set in .env - no wildcard in production
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
+# HTTPS Security Settings (Production)
+# When DEBUG=False, these settings enforce HTTPS-only communication
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=True, cast=bool)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -130,8 +142,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 _cors_origins = config('CORS_ALLOWED_ORIGINS', default='')
 if _cors_origins:
     CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+elif not DEBUG:
+    # Production requires explicit CORS configuration
+    raise ImproperlyConfigured(
+        'CORS_ALLOWED_ORIGINS must be set in .env for production. '
+        'Example: CORS_ALLOWED_ORIGINS=https://yourdomain.com'
+    )
 else:
-    # Development fallback only - never use CORS_ALLOW_ALL_ORIGINS=True in production
+    # Development fallback only
     CORS_ALLOWED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 CORS_ALLOW_CREDENTIALS = True
 
