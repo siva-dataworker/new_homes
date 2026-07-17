@@ -10,8 +10,22 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import connection
 from datetime import datetime, timedelta
 from .authentication import JWTAuthentication
+from .database import paginate_query, get_pagination_info, execute_query
 
 logger = logging.getLogger(__name__)
+
+# Import our main database helpers
+from .database import fetch_one as db_fetch_one
+from .database import fetch_all as db_fetch_all
+
+# Re-export for compatibility
+def fetch_one(query, params=None):
+    """Use database.py fetch_one for consistency"""
+    return db_fetch_one(query, params)
+
+def fetch_all(query, params=None):
+    """Use database.py fetch_all for consistency"""
+    return db_fetch_all(query, params)
 
 
 def fetch_all(query, params=None):
