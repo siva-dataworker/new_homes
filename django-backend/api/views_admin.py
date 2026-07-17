@@ -43,13 +43,32 @@ def execute_query(query, params=None):
 
 @api_view(['GET'])
 def get_all_sites(request):
-    """Get all sites for dropdown selection"""
+    """Get all sites for dropdown selection with pagination"""
     try:
-        sites = fetch_all("""
+        limit = request.GET.get('limit', 20)
+        offset = request.GET.get('offset', 0)
+        
+        try:
+            limit = int(limit)
+            offset = int(offset)
+        except ValueError:
+            limit = 20
+            offset = 0
+        
+        # ISSUE-19 fix: Add pagination to list endpoints
+        query = """
             SELECT id, site_name, area, street, city, created_at
             FROM sites
             ORDER BY site_name NULLS LAST
-        """)
+        """
+        
+        results, total_count, has_more = paginate_query(
+            query, 
+            limit=limit, 
+            offset=offset
+        )
+        
+        pagination = get_pagination_info(total_count, limit, offset)
         
         return Response({
             'sites': [
@@ -59,8 +78,9 @@ def get_all_sites(request):
                     'location': f"{s['area'] or ''} {s['street'] or ''} {s['city'] or ''}".strip() or 'N/A',
                     'created_at': s['created_at'].isoformat() if s['created_at'] else None
                 }
-                for s in sites
-            ]
+                for s in results
+            ],
+            'pagination': pagination
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

@@ -120,9 +120,21 @@ def upload_material_bill(request):
 def get_material_bills(request):
     """
     Get material bills with optional filters
-    GET /api/construction/material-bills/
+    GET /api/construction/material-bills/?limit=20&offset=0
+    
+    ISSUE-19 fix: Added pagination support
     """
     try:
+        limit = request.GET.get('limit', 20)
+        offset = request.GET.get('offset', 0)
+        
+        try:
+            limit = int(limit)
+            offset = int(offset)
+        except ValueError:
+            limit = 20
+            offset = 0
+        
         site_id = request.query_params.get('site_id')
         vendor_type = request.query_params.get('vendor_type')
         material_type = request.query_params.get('material_type')
@@ -159,9 +171,10 @@ def get_material_bills(request):
             query += " AND mb.payment_status = %s"
             params.append(payment_status)
         
-        query += " ORDER BY mb.bill_date DESC LIMIT 200"
+        query += " ORDER BY mb.bill_date DESC"
         
-        bills = fetch_all(query, tuple(params) if params else None)
+        results, total_count, has_more = paginate_query(query, tuple(params) if params else (), limit, offset)
+        pagination = get_pagination_info(total_count, limit, offset)
         
         return Response({
             'bills': [
@@ -183,9 +196,9 @@ def get_material_bills(request):
                     'file_url': b['file_url'],
                     'uploaded_by_name': b['uploaded_by_name'],
                 }
-                for b in bills
+                for b in results
             ],
-            'total': len(bills),
+            'pagination': pagination
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

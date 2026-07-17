@@ -216,6 +216,8 @@ def fetch_all(query, params=None):
 # ── Pagination Helpers ────────────────────────────────────────────────────────
 # ISSUE-19 fix: Pagination support for list endpoints
 
+from rest_framework.response import Response
+
 def paginate_query(query, params=None, limit=20, offset=0):
     """
     Add pagination to a query and return paginated results.

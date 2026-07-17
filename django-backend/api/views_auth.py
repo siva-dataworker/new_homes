@@ -319,20 +319,37 @@ def get_roles(request):
 def get_pending_users(request):
     """
     Get all pending user approvals (Admin only)
-    GET /api/admin/pending-users/
+    GET /api/admin/pending-users/?limit=20&offset=0
+    
+    ISSUE-19 fix: Added pagination support
     """
     try:
         if request.user.get('role') != 'Admin':
             return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+        
+        limit = request.GET.get('limit', 20)
+        offset = request.GET.get('offset', 0)
+        
+        try:
+            limit = int(limit)
+            offset = int(offset)
+        except ValueError:
+            limit = 20
+            offset = 0
 
-        users = fetch_all("""
+        query = """
             SELECT u.id, u.username, u.email, u.phone, u.full_name, 
                    r.role_name, u.created_at
             FROM users u
             LEFT JOIN roles r ON u.role_id = r.id
             WHERE u.status = 'PENDING'
             ORDER BY u.created_at DESC
-        """)
+        """
+        
+        results, total_count, has_more = paginate_query(
+            query, limit=limit, offset=offset
+        )
+        pagination = get_pagination_info(total_count, limit, offset)
         
         return Response({
             'users': [
@@ -345,8 +362,9 @@ def get_pending_users(request):
                     'role': u['role_name'],
                     'created_at': u['created_at'].isoformat() if u['created_at'] else None
                 }
-                for u in users
-            ]
+                for u in results
+            ],
+            'pagination': pagination
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
@@ -361,19 +379,36 @@ def get_pending_users(request):
 def get_all_users(request):
     """
     Get all users (Admin only)
-    GET /api/admin/all-users/
+    GET /api/admin/all-users/?limit=20&offset=0
+    
+    ISSUE-19 fix: Added pagination support
     """
     try:
         if request.user.get('role') != 'Admin':
             return Response({'error': 'Admin access required'}, status=status.HTTP_403_FORBIDDEN)
+        
+        limit = request.GET.get('limit', 20)
+        offset = request.GET.get('offset', 0)
+        
+        try:
+            limit = int(limit)
+            offset = int(offset)
+        except ValueError:
+            limit = 20
+            offset = 0
 
-        users = fetch_all("""
+        query = """
             SELECT u.id, u.username, u.email, u.phone, u.full_name, 
                    r.role_name, u.status, u.is_active, u.created_at, u.last_login
             FROM users u
             LEFT JOIN roles r ON u.role_id = r.id
             ORDER BY u.created_at DESC
-        """)
+        """
+        
+        results, total_count, has_more = paginate_query(
+            query, limit=limit, offset=offset
+        )
+        pagination = get_pagination_info(total_count, limit, offset)
         
         return Response({
             'users': [
@@ -389,8 +424,9 @@ def get_all_users(request):
                     'created_at': u['created_at'].isoformat() if u['created_at'] else None,
                     'last_login': u['last_login'].isoformat() if u['last_login'] else None
                 }
-                for u in users
-            ]
+                for u in results
+            ],
+            'pagination': pagination
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
