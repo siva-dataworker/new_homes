@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'auth_service.dart';
+import 'api_client.dart';
+import '../utils/app_logger.dart';
 
 class ExportService {
   static final ExportService _instance = ExportService._internal();
@@ -51,21 +53,21 @@ class ExportService {
 
   Future<Map<String, dynamic>> _downloadAndSaveFile(String url, String defaultFilename) async {
     try {
-      print('Starting download from: $url');
+      AppLogger.d('Starting download from: $url');
       
       // Download file
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );
 
-      print('Download response status: ${response.statusCode}');
-      print('Response body length: ${response.bodyBytes.length}');
+      AppLogger.d('Download response status: ${response.statusCode}');
+      AppLogger.d('Response body length: ${response.bodyBytes.length}');
 
       if (response.statusCode == 200) {
         // Get download path
         final downloadPath = await _getDownloadPath();
-        print('Download path: $downloadPath');
+        AppLogger.d('Download path: $downloadPath');
         
         // Extract filename from Content-Disposition header
         String filename = defaultFilename;
@@ -76,7 +78,7 @@ class ExportService {
             filename = filenameMatch.group(1)!;
           }
         }
-        print('Filename: $filename');
+        AppLogger.d('Filename: $filename');
 
         // Save file
         final file = File('$downloadPath/$filename');
@@ -85,7 +87,7 @@ class ExportService {
         // Verify file was saved
         final fileExists = await file.exists();
         final fileSize = await file.length();
-        print('File saved: $fileExists, Size: $fileSize bytes, Path: ${file.path}');
+        AppLogger.d('File saved: $fileExists, Size: $fileSize bytes, Path: ${file.path}');
 
         if (!fileExists || fileSize == 0) {
           return {
@@ -108,7 +110,7 @@ class ExportService {
         };
       }
     } catch (e) {
-      print('Download error: $e');
+      AppLogger.d('Download error: $e');
       return {
         'success': false,
         'error': 'Download error: $e',
@@ -122,8 +124,8 @@ class ExportService {
       final file = File(filePath);
       final exists = await file.exists();
       
-      print('Attempting to open file: $filePath');
-      print('File exists: $exists');
+      AppLogger.d('Attempting to open file: $filePath');
+      AppLogger.d('File exists: $exists');
       
       if (!exists) {
         return {
@@ -133,15 +135,15 @@ class ExportService {
       }
       
       final fileSize = await file.length();
-      print('File size: $fileSize bytes');
+      AppLogger.d('File size: $fileSize bytes');
       
       final result = await OpenFilex.open(
         filePath,
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       );
       
-      print('OpenFilex result type: ${result.type}');
-      print('OpenFilex result message: ${result.message}');
+      AppLogger.d('OpenFilex result type: ${result.type}');
+      AppLogger.d('OpenFilex result message: ${result.message}');
       
       return {
         'opened': result.type == ResultType.done,
@@ -149,7 +151,7 @@ class ExportService {
         'resultType': result.type.toString(),
       };
     } catch (e) {
-      print('Error opening file: $e');
+      AppLogger.d('Error opening file: $e');
       return {
         'opened': false,
         'message': 'Error: $e',

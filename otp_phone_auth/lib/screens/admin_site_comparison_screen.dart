@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../providers/admin_provider.dart';
 import '../utils/smooth_animations.dart';
+import '../utils/currency_formatter.dart';
 
 class AdminSiteComparisonScreen extends StatefulWidget {
   const AdminSiteComparisonScreen({super.key, required List<Map<String, dynamic>> sites});
@@ -369,16 +370,6 @@ class _AdminSiteComparisonScreenState extends State<AdminSiteComparisonScreen> {
     );
   }
 
-  String _formatAmount(dynamic amount) {
-    if (amount == null) return '0';
-    final value = double.tryParse(amount.toString()) ?? 0;
-    if (value >= 10000000) {
-      return '${(value / 10000000).toStringAsFixed(2)}Cr';
-    } else if (value >= 100000) {
-      return '${(value / 100000).toStringAsFixed(2)}L';
-    } else if (value >= 1000) {
-      return '${(value / 1000).toStringAsFixed(2)}K';
-    }
-    return value.toStringAsFixed(2);
-  }
+  String _formatAmount(dynamic amount) =>
+      formatIndianAmount(amount, nullFallback: '0');
 }

@@ -1,7 +1,7 @@
 import '../config/app_config.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'api_client.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -12,6 +12,13 @@ class AuthService {
   static String get baseUrl => AppConfig.baseUrl;
   static const Duration requestTimeout = Duration(seconds: 10);
 
+  // The JWT and cached user profile are session credentials, not app
+  // preferences — they belong in the platform keystore/keychain, not
+  // plaintext SharedPreferences.
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
   String? _token;
   Map<String, dynamic>? _currentUser;
 
@@ -19,8 +26,7 @@ class AuthService {
   Future<String?> getToken() async {
     if (_token != null) return _token;
 
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('auth_token');
+    _token = await _storage.read(key: 'auth_token');
     return _token;
   }
 
@@ -28,8 +34,7 @@ class AuthService {
   Future<Map<String, dynamic>?> getCurrentUser() async {
     if (_currentUser != null) return _currentUser;
 
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString('current_user');
+    final userJson = await _storage.read(key: 'current_user');
     if (userJson != null) {
       _currentUser = json.decode(userJson);
     }
@@ -41,9 +46,8 @@ class AuthService {
     _token = token;
     _currentUser = user;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
-    await prefs.setString('current_user', json.encode(user));
+    await _storage.write(key: 'auth_token', value: token);
+    await _storage.write(key: 'current_user', value: json.encode(user));
   }
 
   // Clear auth data
@@ -51,9 +55,8 @@ class AuthService {
     _token = null;
     _currentUser = null;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('current_user');
+    await _storage.delete(key: 'auth_token');
+    await _storage.delete(key: 'current_user');
   }
 
   // Register new user
@@ -66,20 +69,19 @@ class AuthService {
     required String role,
   }) async {
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/auth/register/'),
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode({
-              'username': username,
-              'email': email,
-              'phone': phone,
-              'password': password,
-              'full_name': fullName,
-              'role': role,
-            }),
-          )
-          .timeout(requestTimeout);
+      final response = await ApiClient.post(
+        Uri.parse('$baseUrl/auth/register/'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': username,
+          'email': email,
+          'phone': phone,
+          'password': password,
+          'full_name': fullName,
+          'role': role,
+        }),
+        timeout: requestTimeout,
+      );
 
       final data = json.decode(response.body);
 
@@ -112,13 +114,12 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/auth/login/'),
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode({'username': username, 'password': password}),
-          )
-          .timeout(requestTimeout);
+      final response = await ApiClient.post(
+        Uri.parse('$baseUrl/auth/login/'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'username': username, 'password': password}),
+        timeout: requestTimeout,
+      );
 
       final data = json.decode(response.body);
 
@@ -150,7 +151,7 @@ class AuthService {
   // Check approval status
   Future<Map<String, dynamic>> checkApprovalStatus(String username) async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/auth/status/?username=$username'),
         headers: {'Content-Type': 'application/json'},
       );
@@ -177,7 +178,7 @@ class AuthService {
   // Get available roles
   Future<List<String>> getRoles() async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/auth/roles/'),
         headers: {'Content-Type': 'application/json'},
       );
@@ -213,21 +214,20 @@ class AuthService {
   }) async {
     try {
       final token = await getToken();
-      final response = await http
-          .put(
-            Uri.parse('$baseUrl/user/profile/update/'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: json.encode({
-              'full_name': name,
-              'email': email,
-              'phone': phone,
-              if (address != null && address.isNotEmpty) 'address': address,
-            }),
-          )
-          .timeout(requestTimeout);
+      final response = await ApiClient.put(
+        Uri.parse('$baseUrl/user/profile/update/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'full_name': name,
+          'email': email,
+          'phone': phone,
+          if (address != null && address.isNotEmpty) 'address': address,
+        }),
+        timeout: requestTimeout,
+      );
 
       final data = json.decode(response.body);
 
@@ -241,8 +241,10 @@ class AuthService {
             'phone': phone,
             if (address != null) 'address': address,
           };
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('current_user', json.encode(_currentUser));
+          await _storage.write(
+            key: 'current_user',
+            value: json.encode(_currentUser),
+          );
         }
         return {'success': true};
       } else {

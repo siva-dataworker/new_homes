@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/construction_service.dart';
 import '../services/cache_service.dart';
+import '../utils/app_logger.dart';
 
 class AdminAllWorkingSitesScreen extends StatefulWidget {
   const AdminAllWorkingSitesScreen({super.key});
@@ -58,11 +59,11 @@ class _AdminAllWorkingSitesScreenState extends State<AdminAllWorkingSitesScreen>
     try {
       final result = await _constructionService.getWorkingSites();
 
-      print('🔍 [ADMIN] API Response: $result');
+      AppLogger.d('🔍 [ADMIN] API Response: $result');
 
       if (result['success'] == true && mounted) {
         final sites = List<Map<String, dynamic>>.from(result['sites'] ?? []);
-        print('✅ [ADMIN] Loaded ${sites.length} working sites');
+        AppLogger.d('✅ [ADMIN] Loaded ${sites.length} working sites');
 
         await CacheService.saveAllWorkingSites(sites);
 
@@ -78,7 +79,7 @@ class _AdminAllWorkingSitesScreenState extends State<AdminAllWorkingSitesScreen>
           _applyFilters();
         }
       } else {
-        print('❌ [ADMIN] Error: ${result['error']}');
+        AppLogger.d('❌ [ADMIN] Error: ${result['error']}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -89,7 +90,7 @@ class _AdminAllWorkingSitesScreenState extends State<AdminAllWorkingSitesScreen>
         }
       }
     } catch (e) {
-      print('❌ [ADMIN] Exception: $e');
+      AppLogger.d('❌ [ADMIN] Exception: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -112,11 +113,11 @@ class _AdminAllWorkingSitesScreenState extends State<AdminAllWorkingSitesScreen>
     try {
       final result = await _constructionService.getWorkingSites();
 
-      print('🔍 [ADMIN] Refresh API Response: $result');
+      AppLogger.d('🔍 [ADMIN] Refresh API Response: $result');
 
       if (result['success'] == true && mounted) {
         final sites = List<Map<String, dynamic>>.from(result['sites'] ?? []);
-        print('✅ [ADMIN] Refreshed ${sites.length} working sites');
+        AppLogger.d('✅ [ADMIN] Refreshed ${sites.length} working sites');
 
         await CacheService.saveAllWorkingSites(sites);
 
@@ -132,7 +133,7 @@ class _AdminAllWorkingSitesScreenState extends State<AdminAllWorkingSitesScreen>
           _applyFilters();
         }
       } else {
-        print('❌ [ADMIN] Refresh Error: ${result['error']}');
+        AppLogger.d('❌ [ADMIN] Refresh Error: ${result['error']}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -143,7 +144,7 @@ class _AdminAllWorkingSitesScreenState extends State<AdminAllWorkingSitesScreen>
         }
       }
     } catch (e) {
-      print('❌ [ADMIN] Refresh Exception: $e');
+      AppLogger.d('❌ [ADMIN] Refresh Exception: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

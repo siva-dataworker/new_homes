@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/construction_provider.dart';
 import '../providers/change_request_provider.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_logger.dart';
 
 class SupervisorHistoryScreen extends StatefulWidget {
   final String? siteId;
@@ -48,7 +49,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
   }
 
   void _loadDataWithCache() {
-    print('🏗️ [HISTORY] Loading data for cache key: $_cacheKey');
+    AppLogger.d('🏗️ [HISTORY] Loading data for cache key: $_cacheKey');
     
     // Check if we have valid cached data
     if (_screenLoadedCache.containsKey(_cacheKey) && _cacheTimestamps.containsKey(_cacheKey)) {
@@ -56,27 +57,27 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
       final now = DateTime.now();
       
       if (now.difference(cacheTime) < _cacheExpiry) {
-        print('🎯 [HISTORY] Using cached data for $_cacheKey - skipping API calls');
+        AppLogger.d('🎯 [HISTORY] Using cached data for $_cacheKey - skipping API calls');
         // Data is already loaded in provider, just use it
         return;
       } else {
-        print('⏰ [HISTORY] Cache expired for $_cacheKey, refreshing...');
+        AppLogger.d('⏰ [HISTORY] Cache expired for $_cacheKey, refreshing...');
       }
     }
     
     // Load fresh data and mark as cached
-    print('🔄 [HISTORY] Loading fresh data for $_cacheKey');
+    AppLogger.d('🔄 [HISTORY] Loading fresh data for $_cacheKey');
     context.read<ConstructionProvider>().loadSupervisorHistory(forceRefresh: true, siteId: widget.siteId);
     context.read<ChangeRequestProvider>().loadMyChangeRequests();
     
     // Mark as loaded and cache timestamp
     _screenLoadedCache[_cacheKey] = true;
     _cacheTimestamps[_cacheKey] = DateTime.now();
-    print('💾 [HISTORY] Cached data for $_cacheKey');
+    AppLogger.d('💾 [HISTORY] Cached data for $_cacheKey');
   }
 
   void _forceRefresh() {
-    print('🔄 [HISTORY] Force refresh requested for $_cacheKey');
+    AppLogger.d('🔄 [HISTORY] Force refresh requested for $_cacheKey');
     // Clear cache for this screen
     _screenLoadedCache.remove(_cacheKey);
     _cacheTimestamps.remove(_cacheKey);
@@ -93,7 +94,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
   // Method to invalidate cache when new entries are added
   static void invalidateCache(String? siteId) {
     final cacheKey = '${siteId ?? 'all_sites'}_history';
-    print('🗑️ [HISTORY] Invalidating cache for $cacheKey');
+    AppLogger.d('🗑️ [HISTORY] Invalidating cache for $cacheKey');
     _screenLoadedCache.remove(cacheKey);
     _cacheTimestamps.remove(cacheKey);
   }
@@ -209,7 +210,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
           final labourEntries = constructionProvider.labourEntries;
           final materialEntries = constructionProvider.materialEntries;
           
-          print('🔄 History screen rebuild - Labour: ${labourEntries.length}, Material: ${materialEntries.length}');
+          AppLogger.d('🔄 History screen rebuild - Labour: ${labourEntries.length}, Material: ${materialEntries.length}');
           
           final pendingRequestIds = <String>{};
           for (var request in changeProvider.myChangeRequests) {
@@ -220,7 +221,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
 
           return RefreshIndicator(
             onRefresh: () async {
-              print('🔄 Manual refresh triggered');
+              AppLogger.d('🔄 Manual refresh triggered');
               _forceRefresh();
             },
             child: TabBarView(
@@ -235,7 +236,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          print('🔄 FAB refresh triggered');
+          AppLogger.d('🔄 FAB refresh triggered');
           await context.read<ConstructionProvider>().loadSupervisorHistory(forceRefresh: true, siteId: widget.siteId);
           await context.read<ChangeRequestProvider>().loadMyChangeRequests(forceRefresh: true);
           if (mounted) {
@@ -251,12 +252,12 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
   }
 
   Widget _buildHistoryList(List<Map<String, dynamic>> entries, Set<String> pendingRequestIds, bool isLabour) {
-    print('📋 Building history list - isLabour: $isLabour, entries count: ${entries.length}');
+    AppLogger.d('📋 Building history list - isLabour: $isLabour, entries count: ${entries.length}');
     
     // Debug: Print all entry dates
     for (var entry in entries) {
       final date = entry['entry_date'] ?? 'Unknown';
-      print('📅 [HISTORY] Entry date: $date, Type: ${entry[isLabour ? 'labour_type' : 'material_type']}');
+      AppLogger.d('📅 [HISTORY] Entry date: $date, Type: ${entry[isLabour ? 'labour_type' : 'material_type']}');
     }
     
     if (entries.isEmpty) {
@@ -277,13 +278,13 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
     }
 
     // Debug: Print grouped dates
-    print('📅 [HISTORY] Grouped dates: ${groupedByDate.keys.toList()}');
+    AppLogger.d('📅 [HISTORY] Grouped dates: ${groupedByDate.keys.toList()}');
 
     // Sort dates in descending order
     final sortedDates = groupedByDate.keys.toList()
       ..sort((a, b) => b.compareTo(a));
       
-    print('📅 [HISTORY] Sorted dates: $sortedDates');
+    AppLogger.d('📅 [HISTORY] Sorted dates: $sortedDates');
 
     return ListView.builder(
       padding: EdgeInsets.all(16.r),

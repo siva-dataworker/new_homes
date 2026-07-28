@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/budget_management_service.dart';
 import '../services/construction_service.dart';
+import '../utils/app_logger.dart';
 
 class AdminLocalLabourRatesScreen extends StatefulWidget {
   const AdminLocalLabourRatesScreen({super.key});
@@ -43,7 +44,7 @@ class _AdminLocalLabourRatesScreenState extends State<AdminLocalLabourRatesScree
         });
       }
     } catch (e) {
-      print('Error loading labour types: $e');
+      AppLogger.d('Error loading labour types: $e');
     }
   }
 

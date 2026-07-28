@@ -2,6 +2,8 @@ import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
+import '../utils/app_logger.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -27,7 +29,7 @@ class NotificationService {
     required DateTime actualTime,
   }) async {
     try {
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/notifications/late-entry/'),
         headers: await _getHeaders(),
         body: json.encode({
@@ -46,7 +48,7 @@ class NotificationService {
         return {'success': false, 'error': data['error'] ?? 'Failed to send notification'};
       }
     } catch (e) {
-      print('Error sending late entry notification: $e');
+      AppLogger.d('Error sending late entry notification: $e');
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -63,15 +65,15 @@ class NotificationService {
 
       final uri = Uri.parse('$baseUrl/notifications/').replace(queryParameters: queryParams);
       
-      print('🔍 [NOTIFICATION_SERVICE] GET $uri');
+      AppLogger.d('🔍 [NOTIFICATION_SERVICE] GET $uri');
       
-      final response = await http.get(
+      final response = await ApiClient.get(
         uri,
         headers: await _getHeaders(),
       );
 
-      print('🔍 [NOTIFICATION_SERVICE] Status: ${response.statusCode}');
-      print('🔍 [NOTIFICATION_SERVICE] Response: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
+      AppLogger.d('🔍 [NOTIFICATION_SERVICE] Status: ${response.statusCode}');
+      AppLogger.d('🔍 [NOTIFICATION_SERVICE] Response: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -86,7 +88,7 @@ class NotificationService {
         return {'success': false, 'error': data['error'] ?? 'Failed to fetch notifications'};
       }
     } catch (e) {
-      print('❌ [NOTIFICATION_SERVICE] Error fetching notifications: $e');
+      AppLogger.d('❌ [NOTIFICATION_SERVICE] Error fetching notifications: $e');
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -94,7 +96,7 @@ class NotificationService {
   /// Mark notification as read
   Future<Map<String, dynamic>> markAsRead(String notificationId) async {
     try {
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/notifications/$notificationId/read/'),
         headers: await _getHeaders(),
       );
@@ -107,7 +109,7 @@ class NotificationService {
         return {'success': false, 'error': data['error'] ?? 'Failed to mark as read'};
       }
     } catch (e) {
-      print('Error marking notification as read: $e');
+      AppLogger.d('Error marking notification as read: $e');
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -115,7 +117,7 @@ class NotificationService {
   /// Mark all notifications as read
   Future<Map<String, dynamic>> markAllAsRead() async {
     try {
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/notifications/mark-all-read/'),
         headers: await _getHeaders(),
       );
@@ -128,7 +130,7 @@ class NotificationService {
         return {'success': false, 'error': data['error'] ?? 'Failed to mark all as read'};
       }
     } catch (e) {
-      print('Error marking all notifications as read: $e');
+      AppLogger.d('Error marking all notifications as read: $e');
       return {'success': false, 'error': e.toString()};
     }
   }

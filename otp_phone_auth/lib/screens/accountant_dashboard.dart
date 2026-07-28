@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import '../providers/construction_provider.dart';
 import '../providers/accountant_dashboard_provider.dart';
@@ -18,6 +17,9 @@ import 'accountant_reports_screen.dart';
 import 'accountant_entry_screen.dart';
 import 'accountant_compare_screen.dart';
 import 'login_screen.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
+import '../utils/currency_formatter.dart';
 
 class AccountantDashboard extends StatefulWidget {
   final UserModel user;
@@ -92,7 +94,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
   }
 
   Future<void> _loadAccountantDataWithCache() async {
-    print('🏗️ [ACCOUNTANT] Loading data with persistent cache...');
+    AppLogger.d('🏗️ [ACCOUNTANT] Loading data with persistent cache...');
 
     // Load from persistent cache FIRST (instant - 0ms)
     final cachedLabour = await CacheService.loadAccountantLabour();
@@ -112,18 +114,18 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
     });
 
     if (cachedLabour != null || cachedMaterial != null) {
-      print('🎯 [ACCOUNTANT] Using persistent cached data - instant load');
+      AppLogger.d('🎯 [ACCOUNTANT] Using persistent cached data - instant load');
     } else {
-      print('📭 [ACCOUNTANT] No cache found - showing empty state');
+      AppLogger.d('📭 [ACCOUNTANT] No cache found - showing empty state');
     }
 
     // Refresh from API in background (truly non-blocking)
     _refreshAllDataInBackground()
         .then((_) {
-          print('✅ [ACCOUNTANT] Background refresh completed');
+          AppLogger.d('✅ [ACCOUNTANT] Background refresh completed');
         })
         .catchError((e) {
-          print('⚠️ [ACCOUNTANT] Background refresh failed: $e');
+          AppLogger.d('⚠️ [ACCOUNTANT] Background refresh failed: $e');
         });
   }
 
@@ -173,7 +175,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
 
       // Load mismatch data (non-blocking)
       _loadMismatchData().catchError((e) {
-        print('⚠️ [ACCOUNTANT] Mismatch loading failed: $e');
+        AppLogger.d('⚠️ [ACCOUNTANT] Mismatch loading failed: $e');
       });
 
       // Save to cache
@@ -204,9 +206,9 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
         });
       }
 
-      print('✅ [ACCOUNTANT] All data refreshed in background');
+      AppLogger.d('✅ [ACCOUNTANT] All data refreshed in background');
     } catch (e) {
-      print('⚠️ [ACCOUNTANT] Background refresh failed: $e');
+      AppLogger.d('⚠️ [ACCOUNTANT] Background refresh failed: $e');
     }
   }
 
@@ -231,14 +233,13 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
       final authService = AuthService();
       final token = await authService.getToken();
 
-      final response = await http
-          .get(
-            Uri.parse(
-              '${AuthService.baseUrl}/construction/accountant-working-sites-count/',
-            ),
-            headers: {'Authorization': 'Bearer $token'},
-          )
-          .timeout(const Duration(seconds: 5));
+      final response = await ApiClient.get(
+        Uri.parse(
+          '${AuthService.baseUrl}/construction/accountant-working-sites-count/',
+        ),
+        headers: {'Authorization': 'Bearer $token'},
+        timeout: const Duration(seconds: 5),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -247,14 +248,14 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
           _workingSitesCount = count;
           provider.setWorkingSitesCount(count);
         }
-        print('📊 [WORKING SITES] Count fetched: $_workingSitesCount');
+        AppLogger.d('📊 [WORKING SITES] Count fetched: $_workingSitesCount');
       } else {
-        print(
+        AppLogger.d(
           '⚠️ [WORKING SITES] Failed to fetch count: ${response.statusCode}',
         );
       }
     } catch (e) {
-      print('⚠️ [WORKING SITES] Error fetching count: $e');
+      AppLogger.d('⚠️ [WORKING SITES] Error fetching count: $e');
       // Keep existing count on error
     }
   }
@@ -274,16 +275,15 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
         queryParams.write('?start_date=$dateStr&end_date=$dateStr');
       }
 
-      print('🔍 [CASH SUMMARY] Fetching confirmed salary summary...');
+      AppLogger.d('🔍 [CASH SUMMARY] Fetching confirmed salary summary...');
 
-      final response = await http
-          .get(
-            Uri.parse(
-              '${AuthService.baseUrl}/construction/cash-entries/summary/$queryParams',
-            ),
-            headers: {'Authorization': 'Bearer $token'},
-          )
-          .timeout(const Duration(seconds: 5));
+      final response = await ApiClient.get(
+        Uri.parse(
+          '${AuthService.baseUrl}/construction/cash-entries/summary/$queryParams',
+        ),
+        headers: {'Authorization': 'Bearer $token'},
+        timeout: const Duration(seconds: 5),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -295,14 +295,14 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
           provider.setTotalConfirmedSalary(overallTotal);
           provider.setCashBySite(bysite);
         }
-        print(
+        AppLogger.d(
           '✅ [CASH SUMMARY] Overall: ₹$_cashOverallTotal across ${_cashBySite.length} sites',
         );
       } else {
-        print('⚠️ [CASH SUMMARY] Failed: ${response.statusCode}');
+        AppLogger.d('⚠️ [CASH SUMMARY] Failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('⚠️ [CASH SUMMARY] Error: $e');
+      AppLogger.d('⚠️ [CASH SUMMARY] Error: $e');
     }
   }
 
@@ -312,14 +312,13 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
       final authService = AuthService();
       final token = await authService.getToken();
 
-      final response = await http
-          .get(
-            Uri.parse(
-              '${AuthService.baseUrl}/construction/accountant/all-entries/',
-            ),
-            headers: {'Authorization': 'Bearer $token'},
-          )
-          .timeout(const Duration(seconds: 5));
+      final response = await ApiClient.get(
+        Uri.parse(
+          '${AuthService.baseUrl}/construction/accountant/all-entries/',
+        ),
+        headers: {'Authorization': 'Bearer $token'},
+        timeout: const Duration(seconds: 5),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -329,12 +328,12 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
           _approvedEntriesCount = count;
           provider.setLabourEntriesCount(count);
         }
-        print('📊 [APPROVED COUNT] Total entries from cash_entries: $_approvedEntriesCount');
+        AppLogger.d('📊 [APPROVED COUNT] Total entries from cash_entries: $_approvedEntriesCount');
       } else {
-        print('⚠️ [APPROVED COUNT] Failed: ${response.statusCode}');
+        AppLogger.d('⚠️ [APPROVED COUNT] Failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('⚠️ [APPROVED COUNT] Error: $e');
+      AppLogger.d('⚠️ [APPROVED COUNT] Error: $e');
     }
   }
 
@@ -343,7 +342,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
       final authService = AuthService();
       final token = await authService.getToken();
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/construction/all-sites/'),
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -355,10 +354,10 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
             _sites = List<Map<String, dynamic>>.from(data['sites'] ?? []);
           });
         }
-        print('✅ [SITES] Loaded ${_sites.length} sites');
+        AppLogger.d('✅ [SITES] Loaded ${_sites.length} sites');
       }
     } catch (e) {
-      print('⚠️ [SITES] Error loading: $e');
+      AppLogger.d('⚠️ [SITES] Error loading: $e');
     }
   }
 
@@ -395,7 +394,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
   }
 
   Future<void> _loadAccountantData() async {
-    print('🔄 [ACCOUNTANT] Loading fresh data...');
+    AppLogger.d('🔄 [ACCOUNTANT] Loading fresh data...');
     setState(() {
       _isLoading = true;
       _error = null;
@@ -444,10 +443,10 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
       };
       await CacheService.saveAccountantDashboard(dashboardData);
 
-      print('💾 [ACCOUNTANT] Data cached successfully to persistent storage');
+      AppLogger.d('💾 [ACCOUNTANT] Data cached successfully to persistent storage');
     } catch (e) {
       _error = e.toString();
-      print('❌ [ACCOUNTANT] Error loading data: $e');
+      AppLogger.d('❌ [ACCOUNTANT] Error loading data: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -458,33 +457,21 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
   }
 
   void _forceRefresh() {
-    print('🔄 [ACCOUNTANT] Force refresh requested');
+    AppLogger.d('🔄 [ACCOUNTANT] Force refresh requested');
     // Load fresh data (will update cache automatically)
     _loadAccountantData();
   }
 
-  String _formatCurrency(double amount) {
-    if (amount >= 10000000) {
-      // Crores (1 Cr = 10,000,000)
-      return '${(amount / 10000000).toStringAsFixed(2)} Cr';
-    } else if (amount >= 100000) {
-      // Lakhs (1 L = 100,000)
-      return '${(amount / 100000).toStringAsFixed(2)} L';
-    } else if (amount >= 1000) {
-      // Thousands
-      return '${(amount / 1000).toStringAsFixed(2)} K';
-    } else {
-      return amount.toStringAsFixed(2);
-    }
-  }
+  String _formatCurrency(double amount) =>
+      formatIndianAmount(amount, spaceBeforeUnit: true);
 
   Future<void> _loadMismatchData() async {
-    print('🔍 [DASHBOARD MISMATCH] Loading mismatch data for all sites');
+    AppLogger.d('🔍 [DASHBOARD MISMATCH] Loading mismatch data for all sites');
     try {
       // Load mismatches for all sites (no site_id filter)
       final result = await _mismatchService.detectLaborMismatches(days: 7);
 
-      print(
+      AppLogger.d(
         '🔍 [DASHBOARD MISMATCH] API response: ${result['success']}, total: ${result['total_mismatches']}',
       );
 
@@ -493,31 +480,31 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
           _mismatchData = result;
           _totalMismatches = result['total_mismatches'] ?? 0;
         });
-        print(
+        AppLogger.d(
           '✅ [DASHBOARD MISMATCH] Loaded $_totalMismatches mismatches across all sites',
         );
       } else {
-        print(
+        AppLogger.d(
           '⚠️ [DASHBOARD MISMATCH] API returned success=false: ${result['error']}',
         );
       }
     } catch (e) {
-      print('❌ [DASHBOARD MISMATCH] Error loading mismatch data: $e');
+      AppLogger.d('❌ [DASHBOARD MISMATCH] Error loading mismatch data: $e');
     }
   }
 
   void _showMismatchDialog() {
-    print('🔍 [DASHBOARD MISMATCH DIALOG] _showMismatchDialog called');
-    print('🔍 [DASHBOARD MISMATCH DIALOG] _totalMismatches: $_totalMismatches');
+    AppLogger.d('🔍 [DASHBOARD MISMATCH DIALOG] _showMismatchDialog called');
+    AppLogger.d('🔍 [DASHBOARD MISMATCH DIALOG] _totalMismatches: $_totalMismatches');
 
     final mismatches =
         _mismatchData['mismatches'] as List<Map<String, dynamic>>? ?? [];
     final summary =
         _mismatchData['summary'] as List<Map<String, dynamic>>? ?? [];
-    print(
+    AppLogger.d(
       '🔍 [DASHBOARD MISMATCH DIALOG] mismatches count: ${mismatches.length}',
     );
-    print('🔍 [DASHBOARD MISMATCH DIALOG] summary count: ${summary.length}');
+    AppLogger.d('🔍 [DASHBOARD MISMATCH DIALOG] summary count: ${summary.length}');
 
     showDialog(
       context: context,
@@ -690,7 +677,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
                     ),
                     tooltip: 'Labor Entry Mismatches',
                     onPressed: () {
-                      print('🔍 [DASHBOARD BUTTON] Warning icon clicked!');
+                      AppLogger.d('🔍 [DASHBOARD BUTTON] Warning icon clicked!');
                       _showMismatchDialog();
                     },
                   ),

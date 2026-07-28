@@ -2,6 +2,8 @@ import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
+import '../utils/app_logger.dart';
 
 class BudgetService {
   static final BudgetService _instance = BudgetService._internal();
@@ -16,11 +18,11 @@ class BudgetService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('No token found');
+        AppLogger.d('No token found');
         return null;
       }
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/admin/sites/budget/set/'),
         headers: {
           'Content-Type': 'application/json',
@@ -32,17 +34,17 @@ class BudgetService {
         }),
       );
 
-      print('Set budget response: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      AppLogger.d('Set budget response: ${response.statusCode}');
+      AppLogger.d('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body);
       } else {
-        print('Error setting budget: ${response.body}');
+        AppLogger.d('Error setting budget: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error in setBudget: $e');
+      AppLogger.d('Error in setBudget: $e');
       return null;
     }
   }
@@ -52,11 +54,11 @@ class BudgetService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('No token found');
+        AppLogger.d('No token found');
         return null;
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/admin/sites/$siteId/budget/'),
         headers: {
           'Content-Type': 'application/json',
@@ -64,20 +66,20 @@ class BudgetService {
         },
       );
 
-      print('Get budget response: ${response.statusCode}');
+      AppLogger.d('Get budget response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['budget'];
       } else if (response.statusCode == 404) {
-        print('No budget found for site');
+        AppLogger.d('No budget found for site');
         return null;
       } else {
-        print('Error getting budget: ${response.body}');
+        AppLogger.d('Error getting budget: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error in getSiteBudget: $e');
+      AppLogger.d('Error in getSiteBudget: $e');
       return null;
     }
   }
@@ -87,11 +89,11 @@ class BudgetService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('No token found');
+        AppLogger.d('No token found');
         return null;
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/admin/sites/$siteId/budget/utilization/'),
         headers: {
           'Content-Type': 'application/json',
@@ -99,16 +101,16 @@ class BudgetService {
         },
       );
 
-      print('Get utilization response: ${response.statusCode}');
+      AppLogger.d('Get utilization response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        print('Error getting utilization: ${response.body}');
+        AppLogger.d('Error getting utilization: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error in getBudgetUtilization: $e');
+      AppLogger.d('Error in getBudgetUtilization: $e');
       return null;
     }
   }
@@ -118,11 +120,11 @@ class BudgetService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('No token found');
+        AppLogger.d('No token found');
         return [];
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/admin/budgets/all/'),
         headers: {
           'Content-Type': 'application/json',
@@ -130,17 +132,17 @@ class BudgetService {
         },
       );
 
-      print('Get all budgets response: ${response.statusCode}');
+      AppLogger.d('Get all budgets response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return List<Map<String, dynamic>>.from(data['budgets'] ?? []);
       } else {
-        print('Error getting all budgets: ${response.body}');
+        AppLogger.d('Error getting all budgets: ${response.body}');
         return [];
       }
     } catch (e) {
-      print('Error in getAllSitesBudgets: $e');
+      AppLogger.d('Error in getAllSitesBudgets: $e');
       return [];
     }
   }
@@ -153,7 +155,7 @@ class BudgetService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('No token found');
+        AppLogger.d('No token found');
         return [];
       }
 
@@ -171,7 +173,7 @@ class BudgetService {
         url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
@@ -179,17 +181,17 @@ class BudgetService {
         },
       );
 
-      print('Get updates response: ${response.statusCode}');
+      AppLogger.d('Get updates response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return List<Map<String, dynamic>>.from(data['updates'] ?? []);
       } else {
-        print('Error getting updates: ${response.body}');
+        AppLogger.d('Error getting updates: ${response.body}');
         return [];
       }
     } catch (e) {
-      print('Error in getRealTimeUpdates: $e');
+      AppLogger.d('Error in getRealTimeUpdates: $e');
       return [];
     }
   }
@@ -207,7 +209,7 @@ class BudgetService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('No token found');
+        AppLogger.d('No token found');
         return null;
       }
 
@@ -224,7 +226,7 @@ class BudgetService {
       final url = '$baseUrl/admin/sites/$siteId/audit-trail/?' +
           queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
@@ -232,16 +234,16 @@ class BudgetService {
         },
       );
 
-      print('Get audit trail response: ${response.statusCode}');
+      AppLogger.d('Get audit trail response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        print('Error getting audit trail: ${response.body}');
+        AppLogger.d('Error getting audit trail: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error in getAuditTrail: $e');
+      AppLogger.d('Error in getAuditTrail: $e');
       return null;
     }
   }

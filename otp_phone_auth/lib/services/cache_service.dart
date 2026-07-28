@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/app_logger.dart';
 
 /// Service for persistent caching across app restarts
 class CacheService {
@@ -31,7 +32,7 @@ class CacheService {
       await prefs.setString(_notificationsKey, json.encode(data));
       await prefs.setInt(_notificationsTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving notifications cache: $e');
+      AppLogger.d('Error saving notifications cache: $e');
     }
   }
   
@@ -60,7 +61,7 @@ class CacheService {
         };
       }
     } catch (e) {
-      print('Error loading notifications cache: $e');
+      AppLogger.d('Error loading notifications cache: $e');
     }
     return null;
   }
@@ -72,7 +73,7 @@ class CacheService {
       await prefs.remove(_notificationsKey);
       await prefs.remove(_notificationsTimestampKey);
     } catch (e) {
-      print('Error clearing notifications cache: $e');
+      AppLogger.d('Error clearing notifications cache: $e');
     }
   }
   
@@ -83,7 +84,7 @@ class CacheService {
       await prefs.setString(_sitesKey, json.encode(sites));
       await prefs.setInt(_sitesTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving sites cache: $e');
+      AppLogger.d('Error saving sites cache: $e');
     }
   }
   
@@ -107,7 +108,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading sites cache: $e');
+      AppLogger.d('Error loading sites cache: $e');
     }
     return null;
   }
@@ -119,7 +120,7 @@ class CacheService {
       await prefs.remove(_sitesKey);
       await prefs.remove(_sitesTimestampKey);
     } catch (e) {
-      print('Error clearing sites cache: $e');
+      AppLogger.d('Error clearing sites cache: $e');
     }
   }
   
@@ -131,7 +132,7 @@ class CacheService {
       await prefs.setString(key, json.encode(complaints));
       await prefs.setInt(_complaintsTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving complaints cache: $e');
+      AppLogger.d('Error saving complaints cache: $e');
     }
   }
   
@@ -156,7 +157,7 @@ class CacheService {
         return json.decode(cached) as List<dynamic>;
       }
     } catch (e) {
-      print('Error loading complaints cache: $e');
+      AppLogger.d('Error loading complaints cache: $e');
     }
     return null;
   }
@@ -171,7 +172,7 @@ class CacheService {
       }
       await prefs.remove(_complaintsTimestampKey);
     } catch (e) {
-      print('Error clearing complaints cache: $e');
+      AppLogger.d('Error clearing complaints cache: $e');
     }
   }
   
@@ -182,7 +183,7 @@ class CacheService {
       await prefs.setString('$_budgetAllocationKey$siteId', json.encode(budget));
       await prefs.setInt('$_budgetTimestampKey$siteId', DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving budget allocation cache: $e');
+      AppLogger.d('Error saving budget allocation cache: $e');
     }
   }
   
@@ -206,7 +207,7 @@ class CacheService {
         return json.decode(cached) as Map<String, dynamic>;
       }
     } catch (e) {
-      print('Error loading budget allocation cache: $e');
+      AppLogger.d('Error loading budget allocation cache: $e');
     }
     return null;
   }
@@ -218,7 +219,7 @@ class CacheService {
       await prefs.remove('$_budgetAllocationKey$siteId');
       await prefs.remove('$_budgetTimestampKey$siteId');
     } catch (e) {
-      print('Error clearing budget allocation cache: $e');
+      AppLogger.d('Error clearing budget allocation cache: $e');
     }
   }
   
@@ -228,7 +229,7 @@ class CacheService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('$_budgetUtilizationKey$siteId', json.encode(utilization));
     } catch (e) {
-      print('Error saving budget utilization cache: $e');
+      AppLogger.d('Error saving budget utilization cache: $e');
     }
   }
   
@@ -252,7 +253,7 @@ class CacheService {
         return json.decode(cached) as Map<String, dynamic>;
       }
     } catch (e) {
-      print('Error loading budget utilization cache: $e');
+      AppLogger.d('Error loading budget utilization cache: $e');
     }
     return null;
   }
@@ -263,7 +264,7 @@ class CacheService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('$_budgetUtilizationKey$siteId');
     } catch (e) {
-      print('Error clearing budget utilization cache: $e');
+      AppLogger.d('Error clearing budget utilization cache: $e');
     }
   }
   
@@ -276,7 +277,7 @@ class CacheService {
         await prefs.remove(key);
       }
     } catch (e) {
-      print('Error clearing all cache: $e');
+      AppLogger.d('Error clearing all cache: $e');
     }
   }
   
@@ -287,7 +288,7 @@ class CacheService {
       await prefs.setString(_pendingUsersKey, json.encode(users));
       await prefs.setInt(_pendingUsersTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving pending users cache: $e');
+      AppLogger.d('Error saving pending users cache: $e');
     }
   }
   
@@ -311,7 +312,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading pending users cache: $e');
+      AppLogger.d('Error loading pending users cache: $e');
     }
     return null;
   }
@@ -323,7 +324,7 @@ class CacheService {
       await prefs.remove(_pendingUsersKey);
       await prefs.remove(_pendingUsersTimestampKey);
     } catch (e) {
-      print('Error clearing pending users cache: $e');
+      AppLogger.d('Error clearing pending users cache: $e');
     }
   }
   
@@ -334,7 +335,7 @@ class CacheService {
       await prefs.setString(_allUsersKey, json.encode(users));
       await prefs.setInt(_allUsersTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving all users cache: $e');
+      AppLogger.d('Error saving all users cache: $e');
     }
   }
   
@@ -358,7 +359,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading all users cache: $e');
+      AppLogger.d('Error loading all users cache: $e');
     }
     return null;
   }
@@ -370,7 +371,7 @@ class CacheService {
       await prefs.remove(_allUsersKey);
       await prefs.remove(_allUsersTimestampKey);
     } catch (e) {
-      print('Error clearing all users cache: $e');
+      AppLogger.d('Error clearing all users cache: $e');
     }
   }
   
@@ -384,9 +385,7 @@ class CacheService {
   static const String _accountantMaterialTimestampKey = 'accountant_material_timestamp';
   static const String _accountantDashboardKey = 'accountant_dashboard_cache';
   static const String _accountantDashboardTimestampKey = 'accountant_dashboard_timestamp';
-  static const String _accountantReportsKey = 'accountant_reports_cache';
-  static const String _accountantReportsTimestampKey = 'accountant_reports_timestamp';
-  
+
   /// Save accountant labour entries to cache
   static Future<void> saveAccountantLabour(List<Map<String, dynamic>> entries) async {
     try {
@@ -394,7 +393,7 @@ class CacheService {
       await prefs.setString(_accountantLabourKey, json.encode(entries));
       await prefs.setInt(_accountantLabourTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving accountant labour cache: $e');
+      AppLogger.d('Error saving accountant labour cache: $e');
     }
   }
   
@@ -417,7 +416,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading accountant labour cache: $e');
+      AppLogger.d('Error loading accountant labour cache: $e');
     }
     return null;
   }
@@ -429,7 +428,7 @@ class CacheService {
       await prefs.remove(_accountantLabourKey);
       await prefs.remove(_accountantLabourTimestampKey);
     } catch (e) {
-      print('Error clearing accountant labour cache: $e');
+      AppLogger.d('Error clearing accountant labour cache: $e');
     }
   }
   
@@ -440,7 +439,7 @@ class CacheService {
       await prefs.setString(_accountantMaterialKey, json.encode(entries));
       await prefs.setInt(_accountantMaterialTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving accountant material cache: $e');
+      AppLogger.d('Error saving accountant material cache: $e');
     }
   }
   
@@ -463,7 +462,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading accountant material cache: $e');
+      AppLogger.d('Error loading accountant material cache: $e');
     }
     return null;
   }
@@ -475,7 +474,7 @@ class CacheService {
       await prefs.remove(_accountantMaterialKey);
       await prefs.remove(_accountantMaterialTimestampKey);
     } catch (e) {
-      print('Error clearing accountant material cache: $e');
+      AppLogger.d('Error clearing accountant material cache: $e');
     }
   }
   
@@ -486,7 +485,7 @@ class CacheService {
       await prefs.setString(_accountantDashboardKey, json.encode(data));
       await prefs.setInt(_accountantDashboardTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving accountant dashboard cache: $e');
+      AppLogger.d('Error saving accountant dashboard cache: $e');
     }
   }
   
@@ -509,7 +508,7 @@ class CacheService {
         return Map<String, dynamic>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading accountant dashboard cache: $e');
+      AppLogger.d('Error loading accountant dashboard cache: $e');
     }
     return null;
   }
@@ -521,7 +520,7 @@ class CacheService {
       await prefs.remove(_accountantDashboardKey);
       await prefs.remove(_accountantDashboardTimestampKey);
     } catch (e) {
-      print('Error clearing accountant dashboard cache: $e');
+      AppLogger.d('Error clearing accountant dashboard cache: $e');
     }
   }
   
@@ -543,7 +542,7 @@ class CacheService {
       await prefs.setString(_areasKey, json.encode(areas));
       await prefs.setInt(_areasTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving areas cache: $e');
+      AppLogger.d('Error saving areas cache: $e');
     }
   }
   
@@ -566,7 +565,7 @@ class CacheService {
         return List<String>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading areas cache: $e');
+      AppLogger.d('Error loading areas cache: $e');
     }
     return null;
   }
@@ -578,7 +577,7 @@ class CacheService {
       await prefs.remove(_areasKey);
       await prefs.remove(_areasTimestampKey);
     } catch (e) {
-      print('Error clearing areas cache: $e');
+      AppLogger.d('Error clearing areas cache: $e');
     }
   }
   
@@ -591,7 +590,7 @@ class CacheService {
       await prefs.setString(key, json.encode(streets));
       await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving streets cache: $e');
+      AppLogger.d('Error saving streets cache: $e');
     }
   }
   
@@ -616,7 +615,7 @@ class CacheService {
         return List<String>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading streets cache: $e');
+      AppLogger.d('Error loading streets cache: $e');
     }
     return null;
   }
@@ -630,7 +629,7 @@ class CacheService {
       await prefs.remove(key);
       await prefs.remove(timestampKey);
     } catch (e) {
-      print('Error clearing streets cache: $e');
+      AppLogger.d('Error clearing streets cache: $e');
     }
   }
   
@@ -643,7 +642,7 @@ class CacheService {
       await prefs.setString(key, json.encode(sites));
       await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving sites cache: $e');
+      AppLogger.d('Error saving sites cache: $e');
     }
   }
   
@@ -668,7 +667,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading sites cache: $e');
+      AppLogger.d('Error loading sites cache: $e');
     }
     return null;
   }
@@ -682,7 +681,7 @@ class CacheService {
       await prefs.remove(key);
       await prefs.remove(timestampKey);
     } catch (e) {
-      print('Error clearing sites cache: $e');
+      AppLogger.d('Error clearing sites cache: $e');
     }
   }
   
@@ -699,7 +698,7 @@ class CacheService {
       await prefs.setString(key, json.encode(data));
       await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving site labour data: $e');
+      AppLogger.d('Error saving site labour data: $e');
     }
   }
   
@@ -724,7 +723,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading site labour data: $e');
+      AppLogger.d('Error loading site labour data: $e');
     }
     return null;
   }
@@ -738,7 +737,7 @@ class CacheService {
       await prefs.remove(key);
       await prefs.remove(timestampKey);
     } catch (e) {
-      print('Error clearing site labour data: $e');
+      AppLogger.d('Error clearing site labour data: $e');
     }
   }
   
@@ -751,7 +750,7 @@ class CacheService {
       await prefs.setString(key, json.encode(data));
       await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving site materials data: $e');
+      AppLogger.d('Error saving site materials data: $e');
     }
   }
   
@@ -776,7 +775,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading site materials data: $e');
+      AppLogger.d('Error loading site materials data: $e');
     }
     return null;
   }
@@ -790,7 +789,7 @@ class CacheService {
       await prefs.remove(key);
       await prefs.remove(timestampKey);
     } catch (e) {
-      print('Error clearing site materials data: $e');
+      AppLogger.d('Error clearing site materials data: $e');
     }
   }
   
@@ -803,7 +802,7 @@ class CacheService {
       await prefs.setString(key, json.encode(data));
       await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving site requests data: $e');
+      AppLogger.d('Error saving site requests data: $e');
     }
   }
   
@@ -828,7 +827,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading site requests data: $e');
+      AppLogger.d('Error loading site requests data: $e');
     }
     return null;
   }
@@ -842,7 +841,7 @@ class CacheService {
       await prefs.remove(key);
       await prefs.remove(timestampKey);
     } catch (e) {
-      print('Error clearing site requests data: $e');
+      AppLogger.d('Error clearing site requests data: $e');
     }
   }
   
@@ -855,7 +854,7 @@ class CacheService {
       await prefs.setString(key, json.encode(data));
       await prefs.setInt(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving site photos data: $e');
+      AppLogger.d('Error saving site photos data: $e');
     }
   }
   
@@ -880,7 +879,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading site photos data: $e');
+      AppLogger.d('Error loading site photos data: $e');
     }
     return null;
   }
@@ -894,7 +893,7 @@ class CacheService {
       await prefs.remove(key);
       await prefs.remove(timestampKey);
     } catch (e) {
-      print('Error clearing site photos data: $e');
+      AppLogger.d('Error clearing site photos data: $e');
     }
   }
 
@@ -912,7 +911,7 @@ class CacheService {
       await prefs.setString(_labourRatesKey, json.encode(data));
       await prefs.setInt(_labourRatesTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving labour rates cache: $e');
+      AppLogger.d('Error saving labour rates cache: $e');
     }
   }
 
@@ -935,7 +934,7 @@ class CacheService {
         return Map<String, dynamic>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading labour rates cache: $e');
+      AppLogger.d('Error loading labour rates cache: $e');
     }
     return null;
   }
@@ -947,7 +946,7 @@ class CacheService {
       await prefs.remove(_labourRatesKey);
       await prefs.remove(_labourRatesTimestampKey);
     } catch (e) {
-      print('Error clearing labour rates cache: $e');
+      AppLogger.d('Error clearing labour rates cache: $e');
     }
   }
 
@@ -965,7 +964,7 @@ class CacheService {
       await prefs.setString(_materialRequirementsKey, json.encode(data));
       await prefs.setInt(_materialRequirementsTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving material requirements cache: $e');
+      AppLogger.d('Error saving material requirements cache: $e');
     }
   }
 
@@ -988,7 +987,7 @@ class CacheService {
         return json.decode(cached) as List<dynamic>;
       }
     } catch (e) {
-      print('Error loading material requirements cache: $e');
+      AppLogger.d('Error loading material requirements cache: $e');
     }
     return null;
   }
@@ -1000,7 +999,7 @@ class CacheService {
       await prefs.remove(_materialRequirementsKey);
       await prefs.remove(_materialRequirementsTimestampKey);
     } catch (e) {
-      print('Error clearing material requirements cache: $e');
+      AppLogger.d('Error clearing material requirements cache: $e');
     }
   }
 
@@ -1018,7 +1017,7 @@ class CacheService {
       await prefs.setString(_materialsListKey, json.encode(data));
       await prefs.setInt(_materialsListTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving materials list cache: $e');
+      AppLogger.d('Error saving materials list cache: $e');
     }
   }
 
@@ -1041,7 +1040,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading materials list cache: $e');
+      AppLogger.d('Error loading materials list cache: $e');
     }
     return null;
   }
@@ -1053,7 +1052,7 @@ class CacheService {
       await prefs.remove(_materialsListKey);
       await prefs.remove(_materialsListTimestampKey);
     } catch (e) {
-      print('Error clearing materials list cache: $e');
+      AppLogger.d('Error clearing materials list cache: $e');
     }
   }
 
@@ -1071,7 +1070,7 @@ class CacheService {
       await prefs.setString(_allWorkingSitesKey, json.encode(data));
       await prefs.setInt(_allWorkingSitesTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving all working sites cache: $e');
+      AppLogger.d('Error saving all working sites cache: $e');
     }
   }
 
@@ -1094,7 +1093,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading all working sites cache: $e');
+      AppLogger.d('Error loading all working sites cache: $e');
     }
     return null;
   }
@@ -1106,7 +1105,7 @@ class CacheService {
       await prefs.remove(_allWorkingSitesKey);
       await prefs.remove(_allWorkingSitesTimestampKey);
     } catch (e) {
-      print('Error clearing all working sites cache: $e');
+      AppLogger.d('Error clearing all working sites cache: $e');
     }
   }
 
@@ -1124,7 +1123,7 @@ class CacheService {
       await prefs.setString(_supervisorWorkingSitesKey, json.encode(data));
       await prefs.setInt(_supervisorWorkingSitesTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving supervisor working sites cache: $e');
+      AppLogger.d('Error saving supervisor working sites cache: $e');
     }
   }
 
@@ -1147,7 +1146,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading supervisor working sites cache: $e');
+      AppLogger.d('Error loading supervisor working sites cache: $e');
     }
     return null;
   }
@@ -1159,7 +1158,7 @@ class CacheService {
       await prefs.remove(_supervisorWorkingSitesKey);
       await prefs.remove(_supervisorWorkingSitesTimestampKey);
     } catch (e) {
-      print('Error clearing supervisor working sites cache: $e');
+      AppLogger.d('Error clearing supervisor working sites cache: $e');
     }
   }
 
@@ -1177,7 +1176,7 @@ class CacheService {
       await prefs.setString(_totalCountsKey, json.encode(data));
       await prefs.setInt(_totalCountsTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving total counts cache: $e');
+      AppLogger.d('Error saving total counts cache: $e');
     }
   }
 
@@ -1200,7 +1199,7 @@ class CacheService {
         return Map<String, dynamic>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading total counts cache: $e');
+      AppLogger.d('Error loading total counts cache: $e');
     }
     return null;
   }
@@ -1212,7 +1211,7 @@ class CacheService {
       await prefs.remove(_totalCountsKey);
       await prefs.remove(_totalCountsTimestampKey);
     } catch (e) {
-      print('Error clearing total counts cache: $e');
+      AppLogger.d('Error clearing total counts cache: $e');
     }
   }
 
@@ -1230,7 +1229,7 @@ class CacheService {
       await prefs.setString(_todaySitesKey, json.encode(data));
       await prefs.setInt(_todaySitesTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving today sites with data cache: $e');
+      AppLogger.d('Error saving today sites with data cache: $e');
     }
   }
 
@@ -1253,7 +1252,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading today sites with data cache: $e');
+      AppLogger.d('Error loading today sites with data cache: $e');
     }
     return null;
   }
@@ -1265,7 +1264,7 @@ class CacheService {
       await prefs.remove(_todaySitesKey);
       await prefs.remove(_todaySitesTimestampKey);
     } catch (e) {
-      print('Error clearing today sites with data cache: $e');
+      AppLogger.d('Error clearing today sites with data cache: $e');
     }
   }
 
@@ -1283,7 +1282,7 @@ class CacheService {
       await prefs.setString(_supervisorReportsSitesKey, json.encode(data));
       await prefs.setInt(_supervisorReportsSitesTimestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Error saving supervisor reports sites cache: $e');
+      AppLogger.d('Error saving supervisor reports sites cache: $e');
     }
   }
 
@@ -1306,7 +1305,7 @@ class CacheService {
         return List<Map<String, dynamic>>.from(json.decode(cached));
       }
     } catch (e) {
-      print('Error loading supervisor reports sites cache: $e');
+      AppLogger.d('Error loading supervisor reports sites cache: $e');
     }
     return null;
   }
@@ -1318,7 +1317,72 @@ class CacheService {
       await prefs.remove(_supervisorReportsSitesKey);
       await prefs.remove(_supervisorReportsSitesTimestampKey);
     } catch (e) {
-      print('Error clearing supervisor reports sites cache: $e');
+      AppLogger.d('Error clearing supervisor reports sites cache: $e');
+    }
+  }
+
+  // ============================================================
+  // GENERIC CACHE API
+  //
+  // Every entity above follows the identical save/load/clear-with-
+  // timestamp-expiry pattern, hand-copied ~40 times. New call sites
+  // should use these three methods instead of adding a 41st copy.
+  // The methods above are left as-is rather than rewritten on top of
+  // this, since that would mean touching ~40 working methods with no
+  // behavior change to gain — a mechanical follow-up worth doing with
+  // real test coverage, not as a drive-by edit.
+  // ============================================================
+
+  /// Save any JSON-encodable value under [key], with the same
+  /// timestamp-based expiry semantics as the entity-specific methods above.
+  static Future<void> saveJson(String key, dynamic value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(key, json.encode(value));
+      await prefs.setInt('${key}_timestamp', DateTime.now().millisecondsSinceEpoch);
+    } catch (e) {
+      AppLogger.d('Error saving cache for "$key": $e');
+    }
+  }
+
+  /// Load a value previously saved with [saveJson]. Returns null (and
+  /// clears the entry) once older than [expiry] (default: 24h, matching
+  /// every other cache in this file).
+  static Future<T?> loadJson<T>(
+    String key, {
+    Duration expiry = _cacheExpiry,
+    required T Function(dynamic decoded) fromJson,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final timestamp = prefs.getInt('${key}_timestamp');
+
+      if (timestamp != null) {
+        final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+        if (DateTime.now().difference(cacheTime) > expiry) {
+          await clearJson(key);
+          return null;
+        }
+      }
+
+      final cached = prefs.getString(key);
+      if (cached != null) {
+        return fromJson(json.decode(cached));
+      }
+    } catch (e) {
+      AppLogger.d('Error loading cache for "$key": $e');
+    }
+    return null;
+  }
+
+  /// Clear a value previously saved with [saveJson].
+  static Future<void> clearJson(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(key);
+      await prefs.remove('${key}_timestamp');
+    } catch (e) {
+      AppLogger.d('Error clearing cache for "$key": $e');
     }
   }
 }

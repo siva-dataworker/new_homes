@@ -8,6 +8,9 @@ import 'admin_site_comparison_screen.dart';
 import 'admin_site_documents_screen.dart';
 import 'admin_material_purchases_screen.dart';
 import '../utils/smooth_animations.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
+import '../utils/currency_formatter.dart';
 
 class AdminProfitLossScreen extends StatefulWidget {
   const AdminProfitLossScreen({Key? key}) : super(key: key);
@@ -37,7 +40,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/'),
         headers: {
           'Content-Type': 'application/json',
@@ -52,7 +55,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
         });
       }
     } catch (e) {
-      print('Error loading sites: $e');
+      AppLogger.d('Error loading sites: $e');
     } finally {
       setState(() => _isLoadingSites = false);
     }
@@ -63,7 +66,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/$siteId/profit-loss/'),
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +81,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
         });
       }
     } catch (e) {
-      print('Error loading P/L data: $e');
+      AppLogger.d('Error loading P/L data: $e');
     } finally {
       setState(() => _isLoadingData = false);
     }
@@ -197,7 +200,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
                             Icon(
                               Icons.account_balance_outlined,
                               size: 80.sp,
-                              color: const Color(0xFF6B7280).withOpacity(0.5),
+                              color: const Color(0xFF6B7280).withValues(alpha: 0.5),
                             ),
                             SizedBox(height: 16.h),
                             Text(
@@ -248,7 +251,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: (isProfit ? const Color(0xFF1A1A2E) : Colors.red).withOpacity(0.3),
+            color: (isProfit ? const Color(0xFF1A1A2E) : Colors.red).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -285,7 +288,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
           Container(
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
@@ -349,7 +352,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -398,7 +401,7 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
         Container(
           padding: EdgeInsets.all(8.r),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(icon, color: color, size: 20.sp),
@@ -478,19 +481,19 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
               padding: EdgeInsets.all(10.r),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(icon, color: color, size: 24.sp),
@@ -513,16 +516,5 @@ class _AdminProfitLossScreenState extends State<AdminProfitLossScreen> {
     );
   }
 
-  String _formatAmount(dynamic amount) {
-    if (amount == null) return '0.00';
-    final value = double.tryParse(amount.toString()) ?? 0;
-    if (value >= 10000000) {
-      return '${(value / 10000000).toStringAsFixed(2)}Cr';
-    } else if (value >= 100000) {
-      return '${(value / 100000).toStringAsFixed(2)}L';
-    } else if (value >= 1000) {
-      return '${(value / 1000).toStringAsFixed(2)}K';
-    }
-    return value.toStringAsFixed(2);
-  }
+  String _formatAmount(dynamic amount) => formatIndianAmount(amount);
 }

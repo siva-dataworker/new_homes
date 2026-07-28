@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../services/construction_service.dart';
 import '../utils/app_colors.dart';
 import 'login_screen.dart';
+import '../utils/app_logger.dart';
+import '../utils/currency_formatter.dart';
 
 class ClientDashboard extends StatefulWidget {
   const ClientDashboard({super.key});
@@ -62,7 +65,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
         _loadPhotos(filterDate: todayStr);
       }
     } catch (e) {
-      print('Error loading site data: $e');
+      AppLogger.d('Error loading site data: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -78,7 +81,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
         _materialsData = response;
       });
     } catch (e) {
-      print('Error loading materials: $e');
+      AppLogger.d('Error loading materials: $e');
     }
   }
 
@@ -95,7 +98,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
         _selectedDate = filterDate;
       });
     } catch (e) {
-      print('Error loading photos: $e');
+      AppLogger.d('Error loading photos: $e');
     }
   }
 
@@ -139,7 +142,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
@@ -170,7 +173,7 @@ class _ClientDashboardState extends State<ClientDashboard> {
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.deepNavy.withOpacity(0.1)
+              ? AppColors.deepNavy.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
@@ -298,7 +301,7 @@ class ClientProgressTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
@@ -385,12 +388,12 @@ class ClientProgressTab extends StatelessWidget {
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.deepNavy, AppColors.deepNavy.withOpacity(0.8)],
+          colors: [AppColors.deepNavy, AppColors.deepNavy.withValues(alpha: 0.8)],
         ),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: AppColors.deepNavy.withOpacity(0.2),
+            color: AppColors.deepNavy.withValues(alpha: 0.2),
             blurRadius: 8.r,
             offset: const Offset(0, 3),
           ),
@@ -401,7 +404,7 @@ class ClientProgressTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(10.r),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(Icons.home_work, color: Colors.white, size: 24.sp),
@@ -426,7 +429,7 @@ class ClientProgressTab extends StatelessWidget {
                   '${site['area']} • ${site['street']}',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -503,7 +506,7 @@ class ClientProgressTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
@@ -579,11 +582,11 @@ class ClientProgressTab extends StatelessWidget {
               child: imageUrl.isNotEmpty
                   ? AspectRatio(
                       aspectRatio: 4 / 3, // Instagram-like aspect ratio
-                      child: Image.network(
-                        imageUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorWidget: (_, __, ___) => Container(
                           color: Colors.grey.shade100,
                           child: Center(
                             child: Icon(
@@ -693,10 +696,10 @@ class ClientProgressTab extends StatelessWidget {
             child: InteractiveViewer(
               minScale: 0.5,
               maxScale: 4.0,
-              child: Image.network(
-                imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Center(
+                errorWidget: (_, __, ___) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -864,7 +867,7 @@ class ClientMaterialsTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
@@ -875,7 +878,7 @@ class ClientMaterialsTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(12.r),
             decoration: BoxDecoration(
-              color: AppColors.deepNavy.withOpacity(0.1),
+              color: AppColors.deepNavy.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(icon, color: AppColors.deepNavy, size: 28.sp),
@@ -927,7 +930,7 @@ class ClientMaterialsTab extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: AppColors.deepNavy.withOpacity(0.1),
+              color: AppColors.deepNavy.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -1035,7 +1038,7 @@ class ClientDesignsTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10.r,
               offset: const Offset(0, 2),
             ),
@@ -1198,7 +1201,7 @@ class _ClientIssuesTabState extends State<ClientIssuesTab> {
         });
       }
     } catch (e) {
-      print('Error loading complaints: $e');
+      AppLogger.d('Error loading complaints: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -1461,7 +1464,7 @@ class _ClientIssuesTabState extends State<ClientIssuesTab> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
@@ -1474,7 +1477,7 @@ class _ClientIssuesTabState extends State<ClientIssuesTab> {
           Container(
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: AppColors.deepNavy.withOpacity(0.05),
+              color: AppColors.deepNavy.withValues(alpha: 0.05),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
             ),
             child: Row(
@@ -1546,7 +1549,7 @@ class _ClientIssuesTabState extends State<ClientIssuesTab> {
                         vertical: 2.h,
                       ),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(status).withOpacity(0.1),
+                        color: _getStatusColor(status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -1668,28 +1671,20 @@ class _ClientProfileTabState extends State<ClientProfileTab> {
         });
       }
     } catch (e) {
-      print('Error loading budget allocation: $e');
+      AppLogger.d('Error loading budget allocation: $e');
       if (mounted) {
         setState(() => _isLoadingBudget = false);
       }
     }
   }
 
-  String _formatCurrency(dynamic amount) {
-    if (amount == null) return '₹0';
-    double value = amount is String
-        ? double.tryParse(amount) ?? 0
-        : amount.toDouble();
-
-    if (value >= 10000000) {
-      return '₹${(value / 10000000).toStringAsFixed(2)} Cr';
-    } else if (value >= 100000) {
-      return '₹${(value / 100000).toStringAsFixed(2)} L';
-    } else if (value >= 1000) {
-      return '₹${(value / 1000).toStringAsFixed(2)} K';
-    }
-    return '₹${value.toStringAsFixed(0)}';
-  }
+  String _formatCurrency(dynamic amount) => formatIndianAmount(
+        amount,
+        prefix: '₹',
+        spaceBeforeUnit: true,
+        nullFallback: '0',
+        baseDecimals: 0,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -1718,7 +1713,7 @@ class _ClientProfileTabState extends State<ClientProfileTab> {
                         width: 80.w,
                         height: 80.h,
                         decoration: BoxDecoration(
-                          color: AppColors.deepNavy.withOpacity(0.1),
+                          color: AppColors.deepNavy.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -1764,16 +1759,16 @@ class _ClientProfileTabState extends State<ClientProfileTab> {
     return Container(
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(icon, color: color, size: 24.sp),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
 
 class AccountantBillsService {
   static final AccountantBillsService _instance = AccountantBillsService._internal();
@@ -115,7 +116,7 @@ class AccountantBillsService {
       
       if (params.isNotEmpty) url += '?${params.join('&')}';
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );
@@ -225,7 +226,7 @@ class AccountantBillsService {
       
       if (params.isNotEmpty) url += '?${params.join('&')}';
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );
@@ -329,7 +330,7 @@ class AccountantBillsService {
       
       if (params.isNotEmpty) url += '?${params.join('&')}';
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );

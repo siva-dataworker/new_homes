@@ -1,5 +1,6 @@
 import '../config/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:io';
@@ -7,6 +8,7 @@ import '../services/construction_service.dart';
 import '../services/notification_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/time_validator.dart';
+import '../utils/app_logger.dart';
 
 class SupervisorPhotoUploadScreen extends StatefulWidget {
   final Map<String, dynamic> site;
@@ -57,7 +59,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
   }
 
   Future<void> _loadUploadedPhotos() async {
-    print('🖼️ [SCREEN] Loading uploaded photos...');
+    AppLogger.d('🖼️ [SCREEN] Loading uploaded photos...');
     setState(() => _isLoadingPhotos = true);
     
     try {
@@ -65,12 +67,12 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
         siteId: widget.site['id'],
       );
       
-      print('🖼️ [SCREEN] Result: $result');
+      AppLogger.d('🖼️ [SCREEN] Result: $result');
       
       if (result['success'] && mounted) {
         final photos = result['photos'] as List<Map<String, dynamic>>? ?? [];
         
-        print('🖼️ [SCREEN] Total photos: ${photos.length}');
+        AppLogger.d('🖼️ [SCREEN] Total photos: ${photos.length}');
         
         // Group photos by date
         _photosByDate.clear();
@@ -85,9 +87,9 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
         final morningPhotos = photos.where((p) => p['time_of_day'] == 'morning').toList();
         final eveningPhotos = photos.where((p) => p['time_of_day'] == 'evening').toList();
         
-        print('🖼️ [SCREEN] Morning photos: ${morningPhotos.length}');
-        print('🖼️ [SCREEN] Evening photos: ${eveningPhotos.length}');
-        print('🖼️ [SCREEN] Dates with photos: ${_photosByDate.keys.length}');
+        AppLogger.d('🖼️ [SCREEN] Morning photos: ${morningPhotos.length}');
+        AppLogger.d('🖼️ [SCREEN] Evening photos: ${eveningPhotos.length}');
+        AppLogger.d('🖼️ [SCREEN] Dates with photos: ${_photosByDate.keys.length}');
         
         setState(() {
           _uploadedMorningPhotos = morningPhotos;
@@ -95,13 +97,13 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
           _isLoadingPhotos = false;
         });
       } else {
-        print('🖼️ [SCREEN] Failed to load photos: ${result['error']}');
+        AppLogger.d('🖼️ [SCREEN] Failed to load photos: ${result['error']}');
         if (mounted) {
           setState(() => _isLoadingPhotos = false);
         }
       }
     } catch (e) {
-      print('🖼️ [SCREEN] Exception loading photos: $e');
+      AppLogger.d('🖼️ [SCREEN] Exception loading photos: $e');
       if (mounted) {
         setState(() => _isLoadingPhotos = false);
       }
@@ -116,8 +118,15 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
 
   Future<void> _pickImages(bool isMorning) async {
     try {
-      final List<XFile> images = await _picker.pickMultiImage();
-      
+      // Cap resolution/quality at pick time — the site is likely on a weak
+      // connection, and full-resolution camera photos (often 12MP+) were
+      // previously read into memory uncompressed before upload-time
+      // compression ever got a chance to run.
+      final List<XFile> images = await _picker.pickMultiImage(
+        imageQuality: 85,
+        maxWidth: 1920,
+      );
+
       if (images.isNotEmpty) {
         setState(() {
           if (isMorning) {
@@ -141,8 +150,12 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
 
   Future<void> _takePhoto(bool isMorning) async {
     try {
-      final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-      
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        maxWidth: 1920,
+      );
+
       if (photo != null) {
         setState(() {
           if (isMorning) {
@@ -201,9 +214,9 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
     });
 
     try {
-      print('🕒 [PHOTO] Uploading ${isMorning ? "morning" : "evening"} photos');
-      print('🕒 [PHOTO] Current IST time: ${TimeValidator.getISTTime()}');
-      print('🕒 [PHOTO] Is on time: $isOnTime');
+      AppLogger.d('🕒 [PHOTO] Uploading ${isMorning ? "morning" : "evening"} photos');
+      AppLogger.d('🕒 [PHOTO] Current IST time: ${TimeValidator.getISTTime()}');
+      AppLogger.d('🕒 [PHOTO] Is on time: $isOnTime');
       
       final result = await _constructionService.uploadSupervisorPhotos(
         siteId: widget.site['id'],
@@ -654,33 +667,22 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12.r),
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  color: AppColors.lightSlate,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: AppColors.lightSlate,
-                  child: const Icon(
-                    Icons.broken_image,
-                    color: AppColors.textSecondary,
-                  ),
-                );
-              },
+              placeholder: (context, url) => Container(
+                color: AppColors.lightSlate,
+                child: const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: AppColors.lightSlate,
+                child: const Icon(
+                  Icons.broken_image,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
           ),
           Positioned(
@@ -730,8 +732,8 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
           children: [
             Center(
               child: InteractiveViewer(
-                child: Image.network(
-                  imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
                   fit: BoxFit.contain,
                 ),
               ),

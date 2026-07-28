@@ -8,6 +8,8 @@ import '../services/construction_service.dart';
 import 'site_engineer_labour_screen.dart';
 import 'site_engineer_material_screen.dart';
 import 'site_engineer_extra_cost_screen.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
 
 class SiteEngineerSiteDetailScreen extends StatefulWidget {
   final Map<String, dynamic> site;
@@ -39,28 +41,28 @@ class _SiteEngineerSiteDetailScreenState extends State<SiteEngineerSiteDetailScr
     try {
       final token = await _authService.getToken();
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/construction/extra-costs/${widget.site['id']}/'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print('📦 [EXTRA_COST] Response status: ${response.statusCode}');
-      print('📦 [EXTRA_COST] Response body: ${response.body}');
+      AppLogger.d('📦 [EXTRA_COST] Response status: ${response.statusCode}');
+      AppLogger.d('📦 [EXTRA_COST] Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final extraCostsList = List<Map<String, dynamic>>.from(data['extra_costs'] ?? []);
-        print('📦 [EXTRA_COST] Loaded ${extraCostsList.length} extra costs');
+        AppLogger.d('📦 [EXTRA_COST] Loaded ${extraCostsList.length} extra costs');
         setState(() {
           _extraCosts = extraCostsList;
           _isLoadingExtraCosts = false;
         });
       } else {
-        print('❌ [EXTRA_COST] Failed to load: ${response.statusCode}');
+        AppLogger.d('❌ [EXTRA_COST] Failed to load: ${response.statusCode}');
         setState(() => _isLoadingExtraCosts = false);
       }
     } catch (e) {
-      print('❌ [EXTRA_COST] Exception: $e');
+      AppLogger.d('❌ [EXTRA_COST] Exception: $e');
       setState(() => _isLoadingExtraCosts = false);
     }
   }

@@ -97,10 +97,10 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                   padding: EdgeInsets.all(24.r),
                   decoration: BoxDecoration(
                     color: _status == 'APPROVED'
-                        ? Colors.green.withOpacity(0.1)
+                        ? Colors.green.withValues(alpha: 0.1)
                         : _status == 'REJECTED'
-                            ? Colors.red.withOpacity(0.1)
-                            : AppColors.primary.withOpacity(0.1),
+                            ? Colors.red.withValues(alpha: 0.1)
+                            : AppColors.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

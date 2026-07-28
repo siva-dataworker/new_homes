@@ -18,6 +18,9 @@ import '../services/cache_service.dart';
 import '../services/construction_service.dart';
 import '../utils/smooth_animations.dart';
 import 'site_engineer_material_screen.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
+import '../utils/currency_formatter.dart';
 
 class AdminBudgetManagementScreen extends StatefulWidget {
   final String siteId;
@@ -129,7 +132,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
   Future<void> _loadBudgetAllocation({bool forceRefresh = false}) async {
     // If forcing refresh, clear cache FIRST before loading
     if (forceRefresh) {
-      print('🗑️ [BUDGET] Clearing cache before refresh');
+      AppLogger.d('🗑️ [BUDGET] Clearing cache before refresh');
       await CacheService.clearBudgetAllocation(widget.siteId);
       _budgetLoaded = false;
     }
@@ -142,7 +145,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
           _budgetAllocation = cached;
           _budgetLoaded = true;
         });
-        print('✅ [BUDGET] Loaded allocation from persistent cache');
+        AppLogger.d('✅ [BUDGET] Loaded allocation from persistent cache');
       }
     }
     
@@ -163,7 +166,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
         _isLoadingBudget = false;
         _budgetLoaded = true;
       });
-      print('✅ [BUDGET] Loaded allocation from API and saved to cache');
+      AppLogger.d('✅ [BUDGET] Loaded allocation from API and saved to cache');
     }
   }
 
@@ -171,10 +174,10 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
     // Skip if already loaded and not forcing refresh
     if (_requirementsLoaded && !forceRefresh) return;
     
-    print('🔍 Loading client requirements for site: ${widget.siteId}');
+    AppLogger.d('🔍 Loading client requirements for site: ${widget.siteId}');
     setState(() => _isLoadingRequirements = true);
     final requirements = await _budgetService.getClientRequirements(widget.siteId);
-    print('📦 Received ${requirements.length} requirements');
+    AppLogger.d('📦 Received ${requirements.length} requirements');
     if (mounted) {
       setState(() {
         _clientRequirements = requirements;
@@ -185,23 +188,23 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
   }
 
   Future<void> _loadPhasePayments({bool forceRefresh = false}) async {
-    print('🔄 [PHASES] Loading phase payments...');
+    AppLogger.d('🔄 [PHASES] Loading phase payments...');
     setState(() => _isLoadingPhases = true);
     final phases = await _budgetService.getPhasePayments(widget.siteId);
-    print('📦 [PHASES] Received data: $phases');
+    AppLogger.d('📦 [PHASES] Received data: $phases');
     if (mounted) {
       setState(() {
         _phasePayments = phases;
         _isLoadingPhases = false;
       });
-      print('✅ [PHASES] State updated, should rebuild now');
+      AppLogger.d('✅ [PHASES] State updated, should rebuild now');
     }
   }
 
   Future<void> _loadUtilization({bool forceRefresh = false}) async {
     // If forcing refresh, clear cache FIRST before loading
     if (forceRefresh) {
-      print('🗑️ [BUDGET] Clearing utilization cache before refresh');
+      AppLogger.d('🗑️ [BUDGET] Clearing utilization cache before refresh');
       await CacheService.clearBudgetUtilization(widget.siteId);
       _utilizationLoaded = false;
     }
@@ -214,7 +217,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
           _utilization = cached;
           _utilizationLoaded = true;
         });
-        print('✅ [BUDGET] Loaded utilization from persistent cache');
+        AppLogger.d('✅ [BUDGET] Loaded utilization from persistent cache');
       }
     }
     
@@ -248,22 +251,18 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
           _utilizationLoaded = true;
         }
       });
-      print('✅ [BUDGET] Loaded utilization from API${_isFilterActive || _selectedCostFilter != null ? ' (filtered)' : ' and saved to cache'}');
+      AppLogger.d('✅ [BUDGET] Loaded utilization from API${_isFilterActive || _selectedCostFilter != null ? ' (filtered)' : ' and saved to cache'}');
     }
   }
 
   String _formatCurrency(dynamic amount) {
-    if (amount == null) return '₹0';
-    double value = amount is String ? double.tryParse(amount) ?? 0 : amount.toDouble();
-
-    if (value >= 10000000) {
-      return '₹${(value / 10000000).toStringAsFixed(2)} Cr';
-    } else if (value >= 100000) {
-      return '₹${(value / 100000).toStringAsFixed(2)} L';
-    } else if (value >= 1000) {
-      return '₹${(value / 1000).toStringAsFixed(2)} K';
-    }
-    return '₹${value.toStringAsFixed(0)}';
+    return formatIndianAmount(
+      amount,
+      prefix: '₹',
+      spaceBeforeUnit: true,
+      nullFallback: '0',
+      baseDecimals: 0,
+    );
   }
 
   @override
@@ -733,7 +732,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
                   ).timeout(
                     const Duration(seconds: 2),
                     onTimeout: () {
-                      print('⚠️ [PAYMENT] API timeout after 2s, optimistic update shown');
+                      AppLogger.d('⚠️ [PAYMENT] API timeout after 2s, optimistic update shown');
                       // Return success on timeout - optimistic update already shown
                       return {'success': true, 'message': 'Payment queued'};
                     },
@@ -768,7 +767,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
                     }
                   }
                 } catch (e) {
-                  print('❌ [PAYMENT] Error: $e');
+                  AppLogger.d('❌ [PAYMENT] Error: $e');
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -996,7 +995,7 @@ class _AdminBudgetManagementScreenState extends State<AdminBudgetManagementScree
                     }
                   }
                 } catch (e) {
-                  print('❌ [PHASE UPDATE] Error: $e');
+                  AppLogger.d('❌ [PHASE UPDATE] Error: $e');
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -2243,7 +2242,7 @@ Widget _buildBillsTab() {
       if (context.mounted) {
         Navigator.pop(context);
       }
-      print('❌ Error in material dialog: $e');
+      AppLogger.d('❌ Error in material dialog: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading materials: $e')),
@@ -2581,7 +2580,7 @@ Widget _buildBillsTab() {
                 ).timeout(
                   const Duration(seconds: 2),
                   onTimeout: () {
-                    print('⚠️ [BUDGET] API timeout after 2s, optimistic update shown');
+                    AppLogger.d('⚠️ [BUDGET] API timeout after 2s, optimistic update shown');
                     // Return success on timeout - optimistic update already shown
                     return {'message': 'Update queued'};
                   },
@@ -2616,7 +2615,7 @@ Widget _buildBillsTab() {
                   }
                 }
               } catch (e) {
-                print('❌ [BUDGET] Error: $e');
+                AppLogger.d('❌ [BUDGET] Error: $e');
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -2718,8 +2717,8 @@ class _PhotoTabsSectionState extends State<PhotoTabsSection>
         _isLoadingEngineer = false;
       });
 
-      print('📸 Loaded ${_supervisorPhotos.length} supervisor photos');
-      print('📸 Loaded ${_engineerPhotos.length} engineer photos');
+      AppLogger.d('📸 Loaded ${_supervisorPhotos.length} supervisor photos');
+      AppLogger.d('📸 Loaded ${_engineerPhotos.length} engineer photos');
     }
   }
 
@@ -3064,7 +3063,7 @@ class _AdminDocumentTabState extends State<_AdminDocumentTab> {
       final authService = AuthService();
       final token = await authService.getToken();
       // Use the all-documents endpoint which combines architect + site engineer docs
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/construction/all-documents/?site_id=${widget.siteId}&role=all'),
         headers: {'Authorization': 'Bearer ${token ?? ''}'},
       );

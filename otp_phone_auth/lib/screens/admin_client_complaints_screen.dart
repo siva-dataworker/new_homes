@@ -4,6 +4,7 @@ import 'dart:async';
 import '../services/construction_service.dart';
 import '../services/cache_service.dart';
 import '../utils/smooth_animations.dart';
+import '../utils/app_logger.dart';
 
 class AdminClientComplaintsScreen extends StatefulWidget {
   const AdminClientComplaintsScreen({super.key});
@@ -63,7 +64,7 @@ class _AdminClientComplaintsScreenState extends State<AdminClientComplaintsScree
           _complaints = cached;
           _complaintsCache[_selectedStatus] = cached;
         });
-        print('✅ [ADMIN] Loaded ${_complaints.length} complaints from persistent cache');
+        AppLogger.d('✅ [ADMIN] Loaded ${_complaints.length} complaints from persistent cache');
       }
     }
     
@@ -96,10 +97,10 @@ class _AdminClientComplaintsScreenState extends State<AdminClientComplaintsScree
           _isLoading = false;
         });
         
-        print('✅ [ADMIN] Loaded ${_complaints.length} complaints and saved to cache');
+        AppLogger.d('✅ [ADMIN] Loaded ${_complaints.length} complaints and saved to cache');
       }
     } catch (e) {
-      print('❌ [ADMIN] Error loading complaints: $e');
+      AppLogger.d('❌ [ADMIN] Error loading complaints: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -265,7 +266,7 @@ class _AdminClientComplaintsScreenState extends State<AdminClientComplaintsScree
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -300,7 +301,7 @@ class _AdminClientComplaintsScreenState extends State<AdminClientComplaintsScree
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -403,7 +404,7 @@ class _AdminClientComplaintsScreenState extends State<AdminClientComplaintsScree
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
-                          color: _getStatusColor(status).withOpacity(0.1),
+                          color: _getStatusColor(status).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -539,7 +540,7 @@ class _AdminClientComplaintsScreenState extends State<AdminClientComplaintsScree
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(status).withOpacity(0.1),
+                      color: _getStatusColor(status).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                     child: Text(

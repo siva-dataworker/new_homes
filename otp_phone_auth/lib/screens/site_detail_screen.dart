@@ -12,6 +12,7 @@ import 'supervisor_history_screen.dart';
 import 'supervisor_photo_upload_screen.dart';
 import 'site_engineer_material_screen.dart';
 import 'site_extra_cost_screen.dart';
+import '../utils/app_logger.dart';
 
 enum _SiteEntryStatus {
   none, // no entries today — FAB opens locked quick actions
@@ -108,14 +109,14 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       setState(() {
         _userId = user?['id']?.toString();
       });
-      print('🔑 [SITE_DETAIL] User ID loaded: $_userId');
+      AppLogger.d('🔑 [SITE_DETAIL] User ID loaded: $_userId');
     } catch (e) {
-      print('❌ [SITE_DETAIL] Error loading user ID: $e');
+      AppLogger.d('❌ [SITE_DETAIL] Error loading user ID: $e');
     }
   }
 
   Future<void> _loadTodayEntriesWithCache() async {
-    print(
+    AppLogger.d(
       '🏗️ [SITE_DETAIL] Loading entries for site: $_siteId, date: $_selectedDate',
     );
 
@@ -126,14 +127,14 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       final now = DateTime.now();
 
       if (now.difference(cacheTime) < _cacheExpiry) {
-        print('🎯 [SITE_DETAIL] Using cached data for $_cacheKey');
+        AppLogger.d('🎯 [SITE_DETAIL] Using cached data for $_cacheKey');
         setState(() {
           _todayEntries = _siteDataCache[_cacheKey];
           _isLoading = false;
         });
         return;
       } else {
-        print('⏰ [SITE_DETAIL] Cache expired for $_cacheKey, refreshing...');
+        AppLogger.d('⏰ [SITE_DETAIL] Cache expired for $_cacheKey, refreshing...');
       }
     }
 
@@ -142,7 +143,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   }
 
   Future<void> _loadTodayEntries() async {
-    print(
+    AppLogger.d(
       '🔄 [SITE_DETAIL] Loading fresh data for site: $_siteId, date: $_selectedDate',
     );
     setState(() => _isLoading = true);
@@ -157,7 +158,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       if (entries != null) {
         _siteDataCache[_cacheKey] = entries;
         _cacheTimestamps[_cacheKey] = DateTime.now();
-        print('💾 [SITE_DETAIL] Cached data for $_cacheKey');
+        AppLogger.d('💾 [SITE_DETAIL] Cached data for $_cacheKey');
       }
 
       setState(() {
@@ -176,7 +177,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         if (photoCount > 0) _entrySession.markComplete('photo');
       }
     } catch (e) {
-      print('❌ [SITE_DETAIL] Error loading entries: $e');
+      AppLogger.d('❌ [SITE_DETAIL] Error loading entries: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -222,17 +223,17 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     // Start session when quick actions opens (or reuse existing)
     if (!_entrySession.isActive) {
       _entrySession.start();
-      print('✅ [ENTRY_SESSION] Session started from quick actions');
+      AppLogger.d('✅ [ENTRY_SESSION] Session started from quick actions');
     }
 
     // Mark steps complete based on server data (ALWAYS, to ensure UI updates)
     if (labourEntries.isNotEmpty) {
       _entrySession.markComplete('labour');
-      print('✅ [ENTRY_SESSION] Labour marked complete from server data');
+      AppLogger.d('✅ [ENTRY_SESSION] Labour marked complete from server data');
     }
     if (photoCount > 0) {
       _entrySession.markComplete('photo');
-      print(
+      AppLogger.d(
         '✅ [ENTRY_SESSION] Photo marked complete from server data (count: $photoCount)',
       );
     }
@@ -243,7 +244,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         labourEntries.isNotEmpty || _entrySession.isLabourComplete;
     final photoDone = photoCount > 0 || _entrySession.isPhotoComplete;
     final isMorningComplete = labourDone && photoDone && materialSubmittedToday;
-    print(
+    AppLogger.d(
       '🔓 [QUICK_ACTIONS] Morning complete: $isMorningComplete '
       '(labour: server=${labourEntries.isNotEmpty} session=${_entrySession.isLabourComplete}, '
       'photos: server=${photoCount > 0} session=${_entrySession.isPhotoComplete}, '
@@ -318,7 +319,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
           },
           onAllComplete: () {
             Navigator.pop(context);
-            print('✅ [ENTRY_SESSION] Quick actions closed — labour+photo complete');
+            AppLogger.d('✅ [ENTRY_SESSION] Quick actions closed — labour+photo complete');
           },
         ),
       ),
@@ -330,7 +331,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     final now = DateTime.now();
     final entryDate = DateFormat('yyyy-MM-dd').format(now);
 
-    print('🔍 [ENTRY_LOCK] Checking lock before opening entry form...');
+    AppLogger.d('🔍 [ENTRY_LOCK] Checking lock before opening entry form...');
 
     // Show loading indicator
     showDialog(
@@ -372,7 +373,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
 
     // Site is available - start entry session and open form
     _entrySession.start();
-    print('✅ [ENTRY_SESSION] Session started: ${_entrySession.sessionId}');
+    AppLogger.d('✅ [ENTRY_SESSION] Session started: ${_entrySession.sessionId}');
     _showLabourEntry(startAtEvening: startAtEvening);
   }
 
@@ -640,7 +641,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
       enableDrag: true,
       isDismissible: true,
       builder: (context) => _LabourEntrySheet(
@@ -675,7 +676,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
       enableDrag: true,
       isDismissible: true,
       builder: (context) => _MaterialEntrySheet(
@@ -684,7 +685,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
           // Entry sheet already called Navigator.pop before this callback.
           // Reload data and reopen Quick Actions with fresh material status
           _entrySession.markComplete('material');
-          print('✅ [ENTRY_SESSION] Material marked complete');
+          AppLogger.d('✅ [ENTRY_SESSION] Material marked complete');
           _invalidateCache();
           _loadTodayEntries().then((_) {
             // After data loads, reopen Quick Actions with fresh state
@@ -702,7 +703,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   }
 
   void _invalidateCache() {
-    print('🗑️ [SITE_DETAIL] Invalidating cache for site: $_siteId');
+    AppLogger.d('🗑️ [SITE_DETAIL] Invalidating cache for site: $_siteId');
     // Remove all cache entries for this site
     _siteDataCache.removeWhere((key, value) => key.startsWith(_siteId));
     _cacheTimestamps.removeWhere((key, value) => key.startsWith(_siteId));
@@ -772,9 +773,9 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
             photoCount > 0 &&
             !_entrySession.isPhotoComplete) {
           _entrySession.markComplete('photo');
-          print('✅ [ENTRY_SESSION] Photo marked complete (count: $photoCount)');
+          AppLogger.d('✅ [ENTRY_SESSION] Photo marked complete (count: $photoCount)');
         } else if (_entrySession.isActive && photoCount == 0) {
-          print(
+          AppLogger.d(
             '⚠️ [ENTRY_SESSION] No photos uploaded, photo NOT marked complete',
           );
         }
@@ -1071,14 +1072,11 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Check if entry session is active and not complete
-        if (_entrySession.isActive && !_entrySession.canExit) {
-          _showSessionLockWarning();
-          return false; // Block navigation
-        }
-        return true; // Allow navigation
+    return PopScope(
+      canPop: !(_entrySession.isActive && !_entrySession.canExit),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _showSessionLockWarning();
       },
       child: Scaffold(
         backgroundColor: AppColors.lightSlate,
@@ -2135,20 +2133,20 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     // freely view, add evening entries, or close without restriction.
     if (status == _SiteEntryStatus.dailyComplete ||
         (_entrySession.isLabourComplete && _entrySession.isPhotoComplete)) {
-      print('✅ [FAB] Morning complete, opening unlocked quick actions');
+      AppLogger.d('✅ [FAB] Morning complete, opening unlocked quick actions');
       _showQuickActions();
       return;
     }
 
     // If no entries yet, check lock before opening quick actions
     if (labourEntries.isEmpty && photoCount == 0) {
-      print('🔍 [FAB] No entries yet, checking lock...');
+      AppLogger.d('🔍 [FAB] No entries yet, checking lock...');
       await _checkEntryLockAndShowQuickActions();
       return;
     }
 
     // If entries exist but not complete, show quick actions
-    print('📋 [FAB] Entries in progress, showing quick actions');
+    AppLogger.d('📋 [FAB] Entries in progress, showing quick actions');
     _showQuickActions();
   }
 
@@ -2157,7 +2155,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     final now = DateTime.now();
     final entryDate = DateFormat('yyyy-MM-dd').format(now);
 
-    print('🔍 [ENTRY_LOCK] Checking lock before opening quick actions...');
+    AppLogger.d('🔍 [ENTRY_LOCK] Checking lock before opening quick actions...');
 
     // Show loading indicator
     showDialog(
@@ -2199,7 +2197,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
 
     // Site is available — ensure today's data is loaded so the sheet can
     // correctly reflect labour+photo done state after a re-login.
-    print('✅ [ENTRY_LOCK] Site available, opening quick actions');
+    AppLogger.d('✅ [ENTRY_LOCK] Site available, opening quick actions');
     if (_todayEntries == null && !_isLoading) {
       await _loadTodayEntries();
     }
@@ -2549,7 +2547,7 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
   Future<void> _loadMorningData() async {
     setState(() => _isLoadingMorningData = true);
     try {
-      print('🔍 Loading morning data for site: ${widget.siteId}');
+      AppLogger.d('🔍 Loading morning data for site: ${widget.siteId}');
       final response = await _constructionService.getHistoryByDay(
         siteId: widget.siteId,
       );
@@ -2576,37 +2574,37 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
         final todayStr =
             '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
-        print('📅 Today is: $todayDayName ($todayStr)');
-        print('📦 Available days in response: ${labourByDay.keys.toList()}');
+        AppLogger.d('📅 Today is: $todayDayName ($todayStr)');
+        AppLogger.d('📦 Available days in response: ${labourByDay.keys.toList()}');
 
         // Get entries for today's day of week, then filter by actual date
         List<Map<String, dynamic>> todayEntries = [];
 
         if (labourByDay.containsKey(todayDayName)) {
           final dayEntries = labourByDay[todayDayName] as List;
-          print('✅ Found ${dayEntries.length} entries for $todayDayName');
+          AppLogger.d('✅ Found ${dayEntries.length} entries for $todayDayName');
 
           for (var entry in dayEntries) {
             final entryDate = entry['entry_date'] as String?;
-            print(
+            AppLogger.d(
               '  - Checking entry: ${entry['labour_type']} on date $entryDate',
             );
 
             // Only include entries from today's actual date
             if (entryDate != null && entryDate.startsWith(todayStr)) {
               todayEntries.add(Map<String, dynamic>.from(entry));
-              print(
+              AppLogger.d(
                 '    ✅ Added: ${entry['labour_type']}: ${entry['labour_count']} workers',
               );
             } else {
-              print('    ❌ Skipped: date $entryDate does not match $todayStr');
+              AppLogger.d('    ❌ Skipped: date $entryDate does not match $todayStr');
             }
           }
         } else {
-          print('❌ No entries found for $todayDayName');
+          AppLogger.d('❌ No entries found for $todayDayName');
         }
 
-        print('✅ Total entries loaded for today: ${todayEntries.length}');
+        AppLogger.d('✅ Total entries loaded for today: ${todayEntries.length}');
 
         setState(() {
           _morningData = todayEntries.isNotEmpty
@@ -2614,11 +2612,11 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
               : null;
         });
       } else {
-        print('❌ Failed to load morning data: ${response['error']}');
+        AppLogger.d('❌ Failed to load morning data: ${response['error']}');
       }
     } catch (e) {
-      print('❌ Error loading morning data: $e');
-      print('Stack trace: ${StackTrace.current}');
+      AppLogger.d('❌ Error loading morning data: $e');
+      AppLogger.d('Stack trace: ${StackTrace.current}');
     } finally {
       setState(() => _isLoadingMorningData = false);
     }
@@ -2627,7 +2625,7 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
   Future<void> _loadEveningHistory() async {
     setState(() => _isLoadingEveningData = true);
     try {
-      print('🔍 Loading evening history for site: ${widget.siteId}');
+      AppLogger.d('🔍 Loading evening history for site: ${widget.siteId}');
       final response = await _constructionService.getHistoryByDay(
         siteId: widget.siteId,
       );
@@ -2650,7 +2648,7 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
           }
         });
 
-        print(
+        AppLogger.d(
           '✅ Loaded ${todayEntries.length} evening labour entries for today ($todayStr)',
         );
 
@@ -2658,10 +2656,10 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
           _eveningHistoryData = todayEntries;
         });
       } else {
-        print('❌ Failed to load evening history: ${response['error']}');
+        AppLogger.d('❌ Failed to load evening history: ${response['error']}');
       }
     } catch (e) {
-      print('❌ Error loading evening history: $e');
+      AppLogger.d('❌ Error loading evening history: $e');
     } finally {
       setState(() => _isLoadingEveningData = false);
     }
@@ -2694,7 +2692,7 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
         _isLoadingRates = false;
       });
 
-      print('✅ Loaded ${loaded.length} labour types from admin');
+      AppLogger.d('✅ Loaded ${loaded.length} labour types from admin');
     } else {
       setState(() => _isLoadingRates = false);
     }
@@ -2724,35 +2722,26 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // STRICT LOCK: Block back navigation completely if any entries started
-        final hasEntries = _currentLabourCounts.values.any(
-          (count) => count > 0,
-        );
-
-        if (hasEntries) {
-          // Show warning message - DO NOT allow back
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                '⚠️ Please complete and submit labour entries, material updates, and photos before going back.',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              backgroundColor: Colors.red.shade700,
-              duration: const Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+    return PopScope(
+      // STRICT LOCK: Block back navigation completely if any entries started
+      canPop: !_currentLabourCounts.values.any((count) => count > 0),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        // Show warning message - DO NOT allow back
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              '⚠️ Please complete and submit labour entries, material updates, and photos before going back.',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-          );
-          // BLOCK back navigation
-          return false;
-        }
-
-        // No entries started, allow back navigation
-        return true;
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: const BoxDecoration(
@@ -4074,9 +4063,9 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
 
     setState(() => _isSubmitting = true);
 
-    print('🕒 [LABOUR] About to submit with selected time: $selectedDateTime');
-    print('🕒 [LABOUR] Current IST time: ${TimeValidator.getISTTime()}');
-    print('🕒 [LABOUR] Is on time: $isOnTime');
+    AppLogger.d('🕒 [LABOUR] About to submit with selected time: $selectedDateTime');
+    AppLogger.d('🕒 [LABOUR] Current IST time: ${TimeValidator.getISTTime()}');
+    AppLogger.d('🕒 [LABOUR] Is on time: $isOnTime');
 
     // Submit each labour type with count > 0
     final errors = <String>[];
@@ -4336,7 +4325,7 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
           );
         }
       });
-      print(
+      AppLogger.d(
         '🕒 [LABOUR] ${isMorning ? "Morning" : "Evening"} time changed to: ${isMorning ? _morningSelectedDateTime : _eveningSelectedDateTime}',
       );
     }
@@ -4376,7 +4365,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
     _tabController = TabController(length: 2, vsync: this);
     // Initialize with current local time
     _selectedDateTime = DateTime.now();
-    print('🕒 [MATERIAL] Initialized with local time: $_selectedDateTime');
+    AppLogger.d('🕒 [MATERIAL] Initialized with local time: $_selectedDateTime');
 
     // Load materials from inventory
     _loadAvailableMaterials();
@@ -4402,7 +4391,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
         });
       }
     } catch (e) {
-      print('Error loading materials: $e');
+      AppLogger.d('Error loading materials: $e');
     } finally {
       setState(() => _isLoadingMaterials = false);
     }
@@ -4418,33 +4407,26 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // STRICT LOCK: Block back navigation completely if any entries started
-        final hasEntries = _materialQuantities.values.any((qty) => qty > 0);
-
-        if (hasEntries) {
-          // Show warning message - DO NOT allow back
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                '⚠️ Please complete and submit material updates before going back.',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              backgroundColor: Colors.red.shade700,
-              duration: const Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+    return PopScope(
+      // STRICT LOCK: Block back navigation completely if any entries started
+      canPop: !_materialQuantities.values.any((qty) => qty > 0),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        // Show warning message - DO NOT allow back
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              '⚠️ Please complete and submit material updates before going back.',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-          );
-          // BLOCK back navigation
-          return false;
-        }
-
-        // No entries started, allow back navigation
-        return true;
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: const BoxDecoration(
@@ -5248,24 +5230,24 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
     final isOnTime = TimeValidator.isMaterialEntryOnTime();
     final currentIST = TimeValidator.getISTTime();
 
-    print(
+    AppLogger.d(
       '🕒 [MATERIAL] Current IST time: $currentIST (${TimeValidator.formatISTTime(currentIST)})',
     );
-    print('🕒 [MATERIAL] Is on time: $isOnTime');
-    print('🕒 [MATERIAL] Time window: 4:00 PM - 7:00 PM IST');
+    AppLogger.d('🕒 [MATERIAL] Is on time: $isOnTime');
+    AppLogger.d('🕒 [MATERIAL] Time window: 4:00 PM - 7:00 PM IST');
 
     // Prepare materials list with correct units from available materials
     // Convert stocks left to quantity used
     final materials = <Map<String, dynamic>>[];
 
-    print('📦 [MATERIAL] Available materials: $_availableMaterials');
-    print('📦 [MATERIAL] Material quantities (slider values): $_materialQuantities');
+    AppLogger.d('📦 [MATERIAL] Available materials: $_availableMaterials');
+    AppLogger.d('📦 [MATERIAL] Material quantities (slider values): $_materialQuantities');
 
     for (final entry in _materialQuantities.entries) {
-      print('🔍 [MATERIAL] Processing: ${entry.key} = ${entry.value}');
+      AppLogger.d('🔍 [MATERIAL] Processing: ${entry.key} = ${entry.value}');
 
       if (entry.value < 0) {
-        print('⏭️ [MATERIAL] Skipping ${entry.key} - negative value');
+        AppLogger.d('⏭️ [MATERIAL] Skipping ${entry.key} - negative value');
         continue;
       }
 
@@ -5276,7 +5258,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
       );
 
       if (materialData.isEmpty) {
-        print('⏭️ [MATERIAL] Skipping ${entry.key} - material data not found');
+        AppLogger.d('⏭️ [MATERIAL] Skipping ${entry.key} - material data not found');
         continue;
       }
 
@@ -5284,7 +5266,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
       final stocksLeft = entry.value;
       final quantityUsed = (currentBalance - stocksLeft).clamp(0.0, double.infinity);
 
-      print(
+      AppLogger.d(
         '📊 [MATERIAL] ${entry.key}: balance=$currentBalance, left=$stocksLeft, used=$quantityUsed',
       );
 
@@ -5294,7 +5276,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
         'quantity': quantityUsed,
         'unit': materialData['unit'] as String? ?? 'units',
       });
-      print('✅ [MATERIAL] Added ${entry.key} with usage $quantityUsed');
+      AppLogger.d('✅ [MATERIAL] Added ${entry.key} with usage $quantityUsed');
     }
 
     // Show confirmation dialog first
@@ -5312,10 +5294,10 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
 
     setState(() => _isSubmitting = true);
 
-    print(
+    AppLogger.d(
       '🕒 [MATERIAL] About to submit with selected time: $_selectedDateTime',
     );
-    print('📦 [MATERIAL] Materials to submit: $materials');
+    AppLogger.d('📦 [MATERIAL] Materials to submit: $materials');
 
     if (materials.isEmpty) {
       setState(() => _isSubmitting = false);
@@ -5336,14 +5318,14 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
       customDateTime: _selectedDateTime, // Pass the selected local time
     );
 
-    print('🕒 [MATERIAL] Submission result: ${result['success']}');
-    print(
+    AppLogger.d('🕒 [MATERIAL] Submission result: ${result['success']}');
+    AppLogger.d(
       '🕒 [MATERIAL] Should send notification: ${!isOnTime && result['success']}',
     );
 
     // Send notification to admin if entry is late
     if (!isOnTime && result['success']) {
-      print('📧 [MATERIAL] Sending late entry notification to admin...');
+      AppLogger.d('📧 [MATERIAL] Sending late entry notification to admin...');
       final notificationService = NotificationService();
       final notificationResult = await notificationService
           .sendLateEntryNotification(
@@ -5352,11 +5334,11 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
             message: TimeValidator.getMaterialLateMessage(),
             actualTime: currentIST,
           );
-      print(
+      AppLogger.d(
         '📧 [MATERIAL] Notification result: ${notificationResult['success']}',
       );
       if (!notificationResult['success']) {
-        print(
+        AppLogger.d(
           '❌ [MATERIAL] Notification error: ${notificationResult['error']}',
         );
       }
@@ -5565,7 +5547,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
           _selectedDateTime.minute,
         );
       });
-      print('🕒 [MATERIAL] Date changed to: $_selectedDateTime');
+      AppLogger.d('🕒 [MATERIAL] Date changed to: $_selectedDateTime');
     }
   }
 
@@ -5597,7 +5579,7 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
           picked.minute,
         );
       });
-      print('🕒 [MATERIAL] Time changed to: $_selectedDateTime');
+      AppLogger.d('🕒 [MATERIAL] Time changed to: $_selectedDateTime');
     }
   }
 }

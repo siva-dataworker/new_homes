@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../services/construction_service.dart';
 import '../utils/app_colors.dart';
 import '../providers/accountant_entries_provider.dart';
+import '../utils/app_logger.dart';
 
 class AccountantApprovedEntriesScreen extends StatefulWidget {
   final DateTime initialDate;
@@ -26,13 +27,13 @@ class _AccountantApprovedEntriesScreenState
   @override
   void initState() {
     super.initState();
-    print('🔴 [APPROVED SCREEN] initState called');
+    AppLogger.d('🔴 [APPROVED SCREEN] initState called');
     final provider = context.read<AccountantEntriesProvider>();
-    print('🔴 [APPROVED SCREEN] Initial date from widget: ${widget.initialDate}');
+    AppLogger.d('🔴 [APPROVED SCREEN] Initial date from widget: ${widget.initialDate}');
     provider.setSelectedDate(widget.initialDate);
-    print('🔴 [APPROVED SCREEN] Provider date set, calling _loadAreas()');
+    AppLogger.d('🔴 [APPROVED SCREEN] Provider date set, calling _loadAreas()');
     _loadAreas();
-    print('🔴 [APPROVED SCREEN] Calling _loadApprovedEntries()');
+    AppLogger.d('🔴 [APPROVED SCREEN] Calling _loadApprovedEntries()');
     _loadApprovedEntries();
   }
 
@@ -44,7 +45,7 @@ class _AccountantApprovedEntriesScreenState
         provider.setAreas(areas);
       }
     } catch (e) {
-      print('Error loading areas: $e');
+      AppLogger.d('Error loading areas: $e');
     }
   }
 
@@ -56,7 +57,7 @@ class _AccountantApprovedEntriesScreenState
         provider.setStreets(streets);
       }
     } catch (e) {
-      print('Error loading streets: $e');
+      AppLogger.d('Error loading streets: $e');
     }
   }
 
@@ -66,13 +67,13 @@ class _AccountantApprovedEntriesScreenState
 
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(provider.selectedDate);
-      print('📝 [APPROVED SCREEN] Loading approved entries for date: $dateStr');
+      AppLogger.d('📝 [APPROVED SCREEN] Loading approved entries for date: $dateStr');
 
       final allEntries = await _constructionService.getApprovedEntries(dateStr);
-      print('📝 [APPROVED SCREEN] Received ${allEntries.length} entries from service');
+      AppLogger.d('📝 [APPROVED SCREEN] Received ${allEntries.length} entries from service');
 
       if (allEntries.isNotEmpty) {
-        print('📝 [APPROVED SCREEN] First entry sample: ${allEntries.first}');
+        AppLogger.d('📝 [APPROVED SCREEN] First entry sample: ${allEntries.first}');
       }
 
       // Filter by area and street
@@ -97,14 +98,14 @@ class _AccountantApprovedEntriesScreenState
         return true;
       }).toList();
 
-      print('📝 [APPROVED SCREEN] After filtering: ${filteredEntries.length} entries');
+      AppLogger.d('📝 [APPROVED SCREEN] After filtering: ${filteredEntries.length} entries');
 
       if (mounted) {
         provider.setApprovedEntries(filteredEntries);
         provider.setIsLoading(false);
       }
     } catch (e) {
-      print('❌ [APPROVED SCREEN] Error loading approved entries: $e');
+      AppLogger.d('❌ [APPROVED SCREEN] Error loading approved entries: $e');
       if (mounted) {
         provider.setIsLoading(false);
       }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
 
 class DocumentService {
   static final DocumentService _instance = DocumentService._internal();
@@ -94,7 +95,7 @@ class DocumentService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );
@@ -137,7 +138,7 @@ class DocumentService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );
@@ -166,7 +167,7 @@ class DocumentService {
     String role = 'all', // 'site_engineer', 'architect', 'all'
   }) async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/construction/all-documents/?site_id=$siteId&role=$role'),
         headers: await _getHeaders(),
       );

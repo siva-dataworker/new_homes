@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../providers/admin_provider.dart';
 import '../utils/smooth_animations.dart';
+import '../utils/currency_formatter.dart';
 
 class AdminMaterialPurchasesScreen extends StatefulWidget {
   final String siteId;
@@ -295,13 +296,6 @@ class _AdminMaterialPurchasesScreenState extends State<AdminMaterialPurchasesScr
   }
 
   String _formatAmount(double amount) {
-    if (amount >= 10000000) {
-      return '${(amount / 10000000).toStringAsFixed(2)}Cr';
-    } else if (amount >= 100000) {
-      return '${(amount / 100000).toStringAsFixed(2)}L';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(2)}K';
-    }
-    return amount.toStringAsFixed(2);
+    return formatIndianAmount(amount);
   }
 }

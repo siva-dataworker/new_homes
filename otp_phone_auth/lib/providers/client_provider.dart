@@ -52,20 +52,27 @@ class ClientProvider extends ChangeNotifier {
     await loadClientData();
   }
   
-  // Load all client data
+  // Load all client data. Each sub-load reports its own failure instead of
+  // swallowing it — previously a network failure on any one of these left
+  // the client dashboard silently blank with `_error` never set, so there
+  // was no way for the UI to distinguish "genuinely no data" from "the
+  // request failed."
   Future<void> loadClientData() async {
     try {
       _isLoading = true;
       notifyListeners();
-      
+
+      final failures = <String>[];
+
       // Load all data in parallel for better performance
       await Future.wait([
-        _loadSites(),
+        _loadSites().catchError((e) => failures.add('sites: $e')),
         _loadProgress(),
-        _loadMaterials(),
-        _loadPhotos(),
+        _loadMaterials().catchError((e) => failures.add('materials: $e')),
+        _loadPhotos().catchError((e) => failures.add('photos: $e')),
       ]);
-      
+
+      _error = failures.isEmpty ? null : 'Failed to load: ${failures.join(', ')}';
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -74,39 +81,26 @@ class ClientProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> _loadSites() async {
-    try {
-      _sites = await _service.getSites();
-    } catch (e) {
-      // Silent fail for individual loads
-    }
+    _sites = await _service.getSites();
   }
-  
+
+  // The backend has no client-progress endpoint yet (confirmed — there is
+  // no matching route in ConstructionService), so this intentionally stays
+  // an empty list rather than fabricating a call to a route that doesn't
+  // exist. Wire this up once the backend exposes one.
   Future<void> _loadProgress() async {
-    try {
-      // Implement client progress API call
-      _progress = [];
-    } catch (e) {
-      // Silent fail
-    }
+    _progress = [];
   }
-  
+
   Future<void> _loadMaterials() async {
-    try {
-      _materials = await _service.getMaterials();
-    } catch (e) {
-      // Silent fail
-    }
+    _materials = await _service.getMaterials();
   }
-  
+
   Future<void> _loadPhotos() async {
-    try {
-      final result = await _service.getAccountantPhotos();
-      _photos = List<Map<String, dynamic>>.from(result['photos'] ?? []);
-    } catch (e) {
-      // Silent fail
-    }
+    final result = await _service.getAccountantPhotos();
+    _photos = List<Map<String, dynamic>>.from(result['photos'] ?? []);
   }
   
   // Submit complaint

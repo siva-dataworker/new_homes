@@ -251,9 +251,9 @@ class _SupervisorMaterialUsageDialogState extends State<SupervisorMaterialUsageD
                           Container(
                             padding: EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: _getBalanceColor().withOpacity(0.1),
+                              color: _getBalanceColor().withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: _getBalanceColor().withOpacity(0.3)),
+                              border: Border.all(color: _getBalanceColor().withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               children: [

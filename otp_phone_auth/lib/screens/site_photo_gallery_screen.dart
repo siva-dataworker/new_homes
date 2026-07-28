@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../services/api_client.dart';
 
 class SitePhotoGalleryScreen extends StatefulWidget {
   final Map<String, dynamic> site;
@@ -34,7 +35,7 @@ class _SitePhotoGalleryScreenState extends State<SitePhotoGalleryScreen> {
     try {
       final token = await _authService.getToken();
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/construction/site-photos/${widget.site['id']}/'),
         headers: {'Authorization': 'Bearer $token'},
       );

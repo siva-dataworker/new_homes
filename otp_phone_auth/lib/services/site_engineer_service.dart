@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
 
 class SiteEngineerService {
   String get baseUrl => AppConfig.baseUrl;
@@ -20,7 +21,7 @@ class SiteEngineerService {
   Future<List<Map<String, dynamic>>> getAssignedSites() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/engineer/sites/'),
         headers: headers,
       );
@@ -40,7 +41,7 @@ class SiteEngineerService {
   Future<Map<String, dynamic>> getDailyStatus(String siteId) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/engineer/daily-status/$siteId/'),
         headers: headers,
       );
@@ -59,7 +60,7 @@ class SiteEngineerService {
   Future<List<Map<String, dynamic>>> getComplaints(String siteId) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/engineer/complaints/$siteId/'),
         headers: headers,
       );
@@ -79,7 +80,7 @@ class SiteEngineerService {
   Future<List<Map<String, dynamic>>> getProjectFiles(String siteId) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/engineer/project-files/$siteId/'),
         headers: headers,
       );
@@ -185,7 +186,7 @@ class SiteEngineerService {
         if (labourCount != null) 'labour_count': labourCount,
       };
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/engineer/extra-work/'),
         headers: headers,
         body: json.encode(body),
@@ -205,7 +206,7 @@ class SiteEngineerService {
   Future<String> downloadProjectFile(String fileUrl, String fileName) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(fileUrl),
         headers: headers,
       );

@@ -147,13 +147,36 @@ class AccountantProvider extends ChangeNotifier {
   // Load bills for site
   Future<void> loadBillsForSite(String siteId) async {
     try {
-      // TODO: Fix this - getBillsForSite method doesn't exist
-      // final result = await _billsService.getBillsForSite(siteId);
-      // if (result['success']) {
-      //   _bills = List<Map<String, dynamic>>.from(result['bills'] ?? []);
-      //   notifyListeners();
-      // }
-      _error = 'Method not implemented';
+      final results = await Future.wait([
+        _billsService.getMaterialBills(siteId: siteId),
+        _billsService.getVendorBills(siteId: siteId),
+        _billsService.getSiteAgreements(siteId: siteId),
+      ]);
+
+      final materialResult = results[0];
+      final vendorResult = results[1];
+      final agreementsResult = results[2];
+
+      final combinedBills = <Map<String, dynamic>>[
+        if (materialResult['success'] == true)
+          ...List<Map<String, dynamic>>.from(materialResult['bills'] ?? []),
+        if (vendorResult['success'] == true)
+          ...List<Map<String, dynamic>>.from(vendorResult['bills'] ?? []),
+      ];
+
+      _bills = combinedBills;
+      if (agreementsResult['success'] == true) {
+        _agreements = List<Map<String, dynamic>>.from(agreementsResult['agreements'] ?? []);
+      }
+
+      if (materialResult['success'] != true &&
+          vendorResult['success'] != true &&
+          agreementsResult['success'] != true) {
+        _error = (materialResult['error'] ?? vendorResult['error'] ?? agreementsResult['error'])
+            ?.toString();
+      } else {
+        _error = null;
+      }
       notifyListeners();
     } catch (e) {
       _error = e.toString();

@@ -1,5 +1,6 @@
 import '../config/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../services/auth_service.dart';
 import '../services/export_service.dart';
 import '../utils/app_colors.dart';
@@ -9,6 +10,9 @@ import 'dart:convert';
 import 'package:open_filex/open_filex.dart';
 import 'admin_budget_management_screen.dart';
 import '../utils/smooth_animations.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
+import '../utils/currency_formatter.dart';
 
 class AdminSiteFullView extends StatefulWidget {
   final String siteId;
@@ -109,7 +113,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/admin/sites/${widget.siteId}/dashboard/'),
         headers: {
           'Content-Type': 'application/json',
@@ -117,14 +121,15 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() => _dashboardData = data);
       }
     } catch (e) {
-      print('Error loading dashboard: $e');
+      AppLogger.d('Error loading dashboard: $e');
     } finally {
-      setState(() => _isLoadingDashboard = false);
+      if (mounted) setState(() => _isLoadingDashboard = false);
     }
   }
 
@@ -134,7 +139,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
     try {
       final token = await _authService.getToken();
       // Use accountant endpoint to see modified/verified data
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/construction/accountant/all-entries/'),
         headers: {
           'Content-Type': 'application/json',
@@ -142,9 +147,10 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         },
       );
 
-      print('Labour API Status: ${response.statusCode}');
-      print('Labour API Body length: ${response.body.length}');
+      AppLogger.d('Labour API Status: ${response.statusCode}');
+      AppLogger.d('Labour API Body length: ${response.body.length}');
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         try {
           final data = json.decode(response.body);
@@ -167,13 +173,13 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
             });
           }
         } catch (e) {
-          print('ERROR parsing JSON: $e');
+          AppLogger.d('ERROR parsing JSON: $e');
         }
       }
     } catch (e) {
-      print('Error loading labour: $e');
+      AppLogger.d('Error loading labour: $e');
     } finally {
-      setState(() => _isLoadingLabour = false);
+      if (mounted) setState(() => _isLoadingLabour = false);
     }
   }
 
@@ -184,7 +190,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
       final token = await _authService.getToken();
 
       // Use the accountant all-entries endpoint which returns material_entries
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/construction/accountant/all-entries/'),
         headers: {
           'Content-Type': 'application/json',
@@ -192,6 +198,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
@@ -214,9 +221,9 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         }
       }
     } catch (e) {
-      print('Error loading materials: $e');
+      AppLogger.d('Error loading materials: $e');
     } finally {
-      setState(() => _isLoadingMaterial = false);
+      if (mounted) setState(() => _isLoadingMaterial = false);
     }
   }
 
@@ -225,7 +232,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(
           '$baseUrl/construction/accountant/all-photos/?site_id=${widget.siteId}',
         ),
@@ -235,6 +242,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -242,9 +250,9 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         });
       }
     } catch (e) {
-      print('Error loading photos: $e');
+      AppLogger.d('Error loading photos: $e');
     } finally {
-      setState(() => _isLoadingPhotos = false);
+      if (mounted) setState(() => _isLoadingPhotos = false);
     }
   }
 
@@ -253,7 +261,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(
           '$baseUrl/construction/all-documents/?site_id=${widget.siteId}&role=all',
         ),
@@ -263,6 +271,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
@@ -285,9 +294,9 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         });
       }
     } catch (e) {
-      print('Error loading documents: $e');
+      AppLogger.d('Error loading documents: $e');
     } finally {
-      setState(() => _isLoadingDocuments = false);
+      if (mounted) setState(() => _isLoadingDocuments = false);
     }
   }
 
@@ -296,7 +305,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/admin/sites/${widget.siteId}/bills/'),
         headers: {
           'Content-Type': 'application/json',
@@ -304,6 +313,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         },
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -311,27 +321,19 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         });
       }
     } catch (e) {
-      print('Error loading bills: $e');
+      AppLogger.d('Error loading bills: $e');
     } finally {
-      setState(() => _isLoadingBills = false);
+      if (mounted) setState(() => _isLoadingBills = false);
     }
   }
 
-  String _formatCurrency(dynamic amount) {
-    if (amount == null) return '₹0';
-    double value = amount is String
-        ? double.tryParse(amount) ?? 0
-        : amount.toDouble();
-
-    if (value >= 10000000) {
-      return '₹${(value / 10000000).toStringAsFixed(2)} Cr';
-    } else if (value >= 100000) {
-      return '₹${(value / 100000).toStringAsFixed(2)} L';
-    } else if (value >= 1000) {
-      return '₹${(value / 1000).toStringAsFixed(2)} K';
-    }
-    return '₹${value.toStringAsFixed(0)}';
-  }
+  String _formatCurrency(dynamic amount) => formatIndianAmount(
+        amount,
+        prefix: '₹',
+        spaceBeforeUnit: true,
+        nullFallback: '0',
+        baseDecimals: 0,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -475,12 +477,12 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
         final openMessage = result['openMessage'] as String? ?? '';
 
         // Debug logging
-        print('=== EXPORT RESULT ===');
-        print('File path: $filePath');
-        print('Filename: $filename');
-        print('File size: $fileSize bytes');
-        print('File opened: $fileOpened');
-        print('Open message: $openMessage');
+        AppLogger.d('=== EXPORT RESULT ===');
+        AppLogger.d('File path: $filePath');
+        AppLogger.d('Filename: $filename');
+        AppLogger.d('File size: $fileSize bytes');
+        AppLogger.d('File opened: $fileOpened');
+        AppLogger.d('Open message: $openMessage');
 
         // Show success dialog with Open button
         showDialog(
@@ -631,13 +633,13 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
                   Navigator.pop(context);
                   // Try to open the file with explicit MIME type
                   try {
-                    print('Manual open attempt for: $filePath');
+                    AppLogger.d('Manual open attempt for: $filePath');
                     final openResult = await OpenFilex.open(
                       filePath,
                       type:
                           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     );
-                    print(
+                    AppLogger.d(
                       'Manual open result: ${openResult.type}, ${openResult.message}',
                     );
 
@@ -681,7 +683,7 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
                       }
                     }
                   } catch (e) {
-                    print('Manual open error: $e');
+                    AppLogger.d('Manual open error: $e');
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -1959,15 +1961,19 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: Image.network(
-                imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 50),
-                  );
-                },
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[200],
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image, size: 50),
+                ),
               ),
             ),
             Container(
@@ -2051,26 +2057,28 @@ class _AdminSiteFullViewState extends State<AdminSiteFullView>
             ),
             Flexible(
               child: InteractiveViewer(
-                child: Image.network(
-                  imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      padding: const EdgeInsets.all(50),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 50,
-                            color: Colors.red,
-                          ),
-                          SizedBox(height: 16),
-                          Text('Could not load image'),
-                        ],
-                      ),
-                    );
-                  },
+                  placeholder: (context, url) => const Padding(
+                    padding: EdgeInsets.all(50),
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    padding: const EdgeInsets.all(50),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 50,
+                          color: Colors.red,
+                        ),
+                        SizedBox(height: 16),
+                        Text('Could not load image'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

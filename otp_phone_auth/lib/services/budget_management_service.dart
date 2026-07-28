@@ -2,6 +2,8 @@ import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
+import '../utils/app_logger.dart';
 
 class BudgetManagementService {
   static final BudgetManagementService _instance = BudgetManagementService._internal();
@@ -25,14 +27,14 @@ class BudgetManagementService {
     String? notes,
   }) async {
     try {
-      print('🔄 [SERVICE] allocateBudget called');
-      print('   siteId: $siteId');
-      print('   totalBudget: $totalBudget');
-      print('   clientBalance: $clientBalance');
+      AppLogger.d('🔄 [SERVICE] allocateBudget called');
+      AppLogger.d('   siteId: $siteId');
+      AppLogger.d('   totalBudget: $totalBudget');
+      AppLogger.d('   clientBalance: $clientBalance');
       
       final token = await _authService.getToken();
       if (token == null) {
-        print('❌ [SERVICE] No auth token');
+        AppLogger.d('❌ [SERVICE] No auth token');
         return null;
       }
 
@@ -46,10 +48,10 @@ class BudgetManagementService {
         if (notes != null) 'notes': notes,
       };
       
-      print('📤 [SERVICE] Request body: $body');
+      AppLogger.d('📤 [SERVICE] Request body: $body');
 
       // Use the smart endpoint that handles both create and update
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/allocate-or-update/'),
         headers: {
           'Content-Type': 'application/json',
@@ -58,18 +60,18 @@ class BudgetManagementService {
         body: json.encode(body),
       );
 
-      print('📡 [SERVICE] Response status: ${response.statusCode}');
-      print('📦 [SERVICE] Response body: ${response.body}');
+      AppLogger.d('📡 [SERVICE] Response status: ${response.statusCode}');
+      AppLogger.d('📦 [SERVICE] Response body: ${response.body}');
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        print('✅ [SERVICE] Budget allocated/updated successfully');
+        AppLogger.d('✅ [SERVICE] Budget allocated/updated successfully');
         return json.decode(response.body);
       }
       
-      print('❌ [SERVICE] Failed with status ${response.statusCode}');
+      AppLogger.d('❌ [SERVICE] Failed with status ${response.statusCode}');
       return null;
     } catch (e) {
-      print('❌ [SERVICE] Exception: $e');
+      AppLogger.d('❌ [SERVICE] Exception: $e');
       return null;
     }
   }
@@ -80,7 +82,7 @@ class BudgetManagementService {
       final token = await _authService.getToken();
       if (token == null) return null;
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/budget/allocation/$siteId/'),
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +112,7 @@ class BudgetManagementService {
       final token = await _authService.getToken();
       if (token == null) return null;
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/labour-rate/'),
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +147,7 @@ class BudgetManagementService {
       final token = await _authService.getToken();
       if (token == null) return [];
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/budget/labour-rates/$siteId/'),
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +178,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/delete-labour-type/'),
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +233,7 @@ class BudgetManagementService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +256,7 @@ class BudgetManagementService {
       final token = await _authService.getToken();
       if (token == null) return [];
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/budget/labour-costs/$siteId/'),
         headers: {
           'Content-Type': 'application/json',
@@ -275,17 +277,17 @@ class BudgetManagementService {
   /// Get client requirements for a site
   Future<List<Map<String, dynamic>>> getClientRequirements(String siteId) async {
     try {
-      print('🔍 Fetching client requirements for site: $siteId');
+      AppLogger.d('🔍 Fetching client requirements for site: $siteId');
       final token = await _authService.getToken();
       if (token == null) {
-        print('❌ No auth token available');
+        AppLogger.d('❌ No auth token available');
         return [];
       }
 
       final url = '$baseUrl/admin/client-requirements/?site_id=$siteId';
-      print('🌐 API URL: $url');
+      AppLogger.d('🌐 API URL: $url');
       
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
@@ -293,19 +295,19 @@ class BudgetManagementService {
         },
       );
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📦 Response body: ${response.body}');
+      AppLogger.d('📡 Response status: ${response.statusCode}');
+      AppLogger.d('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final requirements = List<Map<String, dynamic>>.from(data['requirements'] ?? []);
-        print('✅ Found ${requirements.length} requirements');
+        AppLogger.d('✅ Found ${requirements.length} requirements');
         return requirements;
       }
-      print('❌ Failed with status: ${response.statusCode}');
+      AppLogger.d('❌ Failed with status: ${response.statusCode}');
       return [];
     } catch (e) {
-      print('❌ Error fetching client requirements: $e');
+      AppLogger.d('❌ Error fetching client requirements: $e');
       return [];
     }
   }
@@ -318,7 +320,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/budget/local-labour-rates/$area/'),
         headers: {
           'Content-Type': 'application/json',
@@ -339,7 +341,7 @@ class BudgetManagementService {
         'error': 'Failed to load local rates',
       };
     } catch (e) {
-      print('❌ Error fetching local labour rates: $e');
+      AppLogger.d('❌ Error fetching local labour rates: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -359,7 +361,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/local-labour-rate/'),
         headers: {
           'Content-Type': 'application/json',
@@ -386,7 +388,7 @@ class BudgetManagementService {
         'error': error['error'] ?? 'Failed to set local rate',
       };
     } catch (e) {
-      print('❌ Error setting local labour rate: $e');
+      AppLogger.d('❌ Error setting local labour rate: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -411,7 +413,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/add-material-cost/'),
         headers: {
           'Content-Type': 'application/json',
@@ -466,7 +468,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/add-other-cost/'),
         headers: {
           'Content-Type': 'application/json',
@@ -518,7 +520,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/budget/record-phase-payment/'),
         headers: {
           'Content-Type': 'application/json',
@@ -562,7 +564,7 @@ class BudgetManagementService {
       final token = await _authService.getToken();
       if (token == null) return null;
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/budget/phase-payments/$siteId/'),
         headers: {
           'Content-Type': 'application/json',
@@ -593,7 +595,7 @@ class BudgetManagementService {
         return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.put(
+      final response = await ApiClient.put(
         Uri.parse('$baseUrl/budget/update-phase-payment/'),
         headers: {
           'Content-Type': 'application/json',
@@ -635,12 +637,12 @@ class BudgetManagementService {
     try {
       final token = await _authService.getToken();
       if (token == null) {
-        print('❌ [MATERIALS] No auth token');
+        AppLogger.d('❌ [MATERIALS] No auth token');
         return [];
       }
 
-      print('🔍 [MATERIALS] Fetching from: $baseUrl/construction/materials/');
-      final response = await http.get(
+      AppLogger.d('🔍 [MATERIALS] Fetching from: $baseUrl/construction/materials/');
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/construction/materials/'),
         headers: {
           'Content-Type': 'application/json',
@@ -648,20 +650,20 @@ class BudgetManagementService {
         },
       );
 
-      print('📡 [MATERIALS] Response status: ${response.statusCode}');
-      print('📦 [MATERIALS] Response body: ${response.body}');
+      AppLogger.d('📡 [MATERIALS] Response status: ${response.statusCode}');
+      AppLogger.d('📦 [MATERIALS] Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final materials = List<Map<String, dynamic>>.from(data['materials'] ?? []);
-        print('✅ [MATERIALS] Loaded ${materials.length} materials');
+        AppLogger.d('✅ [MATERIALS] Loaded ${materials.length} materials');
         return materials;
       }
       
-      print('❌ [MATERIALS] Failed with status ${response.statusCode}');
+      AppLogger.d('❌ [MATERIALS] Failed with status ${response.statusCode}');
       return [];
     } catch (e) {
-      print('❌ [MATERIALS] Exception: $e');
+      AppLogger.d('❌ [MATERIALS] Exception: $e');
       return [];
     }
   }

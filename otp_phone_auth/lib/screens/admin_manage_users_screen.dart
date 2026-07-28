@@ -7,6 +7,8 @@ import 'dart:convert';
 import '../services/auth_service.dart';
 import '../services/cache_service.dart';
 import '../utils/smooth_animations.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
 
 class AdminManageUsersScreen extends StatefulWidget {
   const AdminManageUsersScreen({Key? key}) : super(key: key);
@@ -86,7 +88,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
           _pendingUsers = cached;
           _pendingLoaded = true;
         });
-        print('✅ [USERS] Loaded ${_pendingUsers.length} pending users from cache');
+        AppLogger.d('✅ [USERS] Loaded ${_pendingUsers.length} pending users from cache');
       }
     }
 
@@ -97,7 +99,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AppConfig.baseUrl}/admin/pending-users/'),
         headers: {
           'Content-Type': 'application/json',
@@ -118,10 +120,10 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
             _pendingLoaded = true;
           });
         }
-        print('✅ [USERS] Loaded ${_pendingUsers.length} pending users from API');
+        AppLogger.d('✅ [USERS] Loaded ${_pendingUsers.length} pending users from API');
       }
     } catch (e) {
-      print('Error loading pending users: $e');
+      AppLogger.d('Error loading pending users: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoadingPending = false);
@@ -138,7 +140,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
           _allUsers = cached;
           _allLoaded = true;
         });
-        print('✅ [USERS] Loaded ${_allUsers.length} all users from cache');
+        AppLogger.d('✅ [USERS] Loaded ${_allUsers.length} all users from cache');
       }
     }
 
@@ -149,7 +151,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
 
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AppConfig.baseUrl}/admin/all-users/'),
         headers: {
           'Content-Type': 'application/json',
@@ -170,10 +172,10 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
             _allLoaded = true;
           });
         }
-        print('✅ [USERS] Loaded ${_allUsers.length} all users from API');
+        AppLogger.d('✅ [USERS] Loaded ${_allUsers.length} all users from API');
       }
     } catch (e) {
-      print('Error loading all users: $e');
+      AppLogger.d('Error loading all users: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoadingAll = false);
@@ -184,7 +186,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
   Future<void> _approveUser(String userId, String username) async {
     try {
       final token = await _authService.getToken();
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('${AppConfig.baseUrl}/admin/approve-user/$userId/'),
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +221,7 @@ class _AdminManageUsersScreenState extends State<AdminManageUsersScreen>
   Future<void> _rejectUser(String userId, String username) async {
     try {
       final token = await _authService.getToken();
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('${AppConfig.baseUrl}/admin/reject-user/$userId/'),
         headers: {
           'Content-Type': 'application/json',

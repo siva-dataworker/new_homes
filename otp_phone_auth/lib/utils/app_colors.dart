@@ -52,6 +52,11 @@ class AppColors {
   static const Color borderColor = Color(0xFFE0E0E0); // Light Gray
   static const Color dividerColor = Color(0xFFBDBDBD); // Medium Light Gray
   static const Color divider = Color(0xFFBDBDBD); // Medium Light Gray (alias)
+
+  // Referenced by several screens/widgets but previously undefined —
+  // this was a real compile error on the live material-usage-history path.
+  static const Color mediumGray = Color(0xFF757575); // Medium Gray
+  static const Color lightGray = Color(0xFFE0E0E0); // Light Gray (alias of borderColor)
   
   // Gradient Colors - Black to Gray
   static const LinearGradient navyGradient = LinearGradient(
@@ -175,6 +180,23 @@ class AppColors {
   static const LinearGradient purpleGradient = violetGradient;
   static const LinearGradient redGradient = LinearGradient(
     colors: [Color(0xFF000000), Color(0xFF424242)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Consolidated from the former standalone `BWColors` (black-and-white
+  // theme variant, previously in utils/black_white_theme.dart) — same exact
+  // values, now under the one palette every screen reads from.
+  static const Color bwBackground = Color(0xFFFFFFFF);
+  static const Color bwSurface = Color(0xFFF6F6F6);
+  static const Color bwCard = Color(0xFFFFFFFF);
+  static const Color bwPrimary = Color(0xFF000000);
+  static const Color bwSecondaryText = Color(0xFF616161);
+  static const Color bwMuted = Color(0xFF9E9E9E);
+  static const Color bwBorder = Color(0xFFE0E0E0);
+
+  static const LinearGradient bwGradient = LinearGradient(
+    colors: [Color(0xFF000000), Color(0xFF757575)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

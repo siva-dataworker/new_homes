@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
 
 class AdminProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -37,7 +39,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/'),
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +53,7 @@ class AdminProvider with ChangeNotifier {
         _sitesLoaded = true;
       }
     } catch (e) {
-      print('Error loading sites: $e');
+      AppLogger.d('Error loading sites: $e');
     } finally {
       _isLoadingSites = false;
       notifyListeners();
@@ -69,7 +71,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/$siteId/labour-count/'),
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +85,7 @@ class AdminProvider with ChangeNotifier {
         return _labourDataCache[siteId]!;
       }
     } catch (e) {
-      print('Error loading labour data: $e');
+      AppLogger.d('Error loading labour data: $e');
     } finally {
       _loadingStates['labour_$siteId'] = false;
       notifyListeners();
@@ -103,7 +105,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/$siteId/bills/'),
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +119,7 @@ class AdminProvider with ChangeNotifier {
         return _billsDataCache[siteId]!;
       }
     } catch (e) {
-      print('Error loading bills: $e');
+      AppLogger.d('Error loading bills: $e');
     } finally {
       _loadingStates['bills_$siteId'] = false;
       notifyListeners();
@@ -137,7 +139,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/$siteId/profit-loss/'),
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +153,7 @@ class AdminProvider with ChangeNotifier {
         return data;
       }
     } catch (e) {
-      print('Error loading P/L data: $e');
+      AppLogger.d('Error loading P/L data: $e');
     } finally {
       _loadingStates['pl_$siteId'] = false;
       notifyListeners();
@@ -171,7 +173,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/$siteId/material-purchases/'),
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +187,7 @@ class AdminProvider with ChangeNotifier {
         return _materialPurchasesCache[siteId]!;
       }
     } catch (e) {
-      print('Error loading material purchases: $e');
+      AppLogger.d('Error loading material purchases: $e');
     } finally {
       _loadingStates['materials_$siteId'] = false;
       notifyListeners();
@@ -205,7 +207,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/sites/$siteId/documents/'),
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +226,7 @@ class AdminProvider with ChangeNotifier {
         return _documentsCache[siteId]!;
       }
     } catch (e) {
-      print('Error loading documents: $e');
+      AppLogger.d('Error loading documents: $e');
     } finally {
       _loadingStates['docs_$siteId'] = false;
       notifyListeners();
@@ -245,7 +247,7 @@ class AdminProvider with ChangeNotifier {
     
     try {
       final token = await _authService.getToken();
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('${AuthService.baseUrl}/admin/sites/compare/'),
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +263,7 @@ class AdminProvider with ChangeNotifier {
         return json.decode(response.body);
       }
     } catch (e) {
-      print('Error comparing sites: $e');
+      AppLogger.d('Error comparing sites: $e');
     } finally {
       _loadingStates['comparison'] = false;
       notifyListeners();

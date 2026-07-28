@@ -2,6 +2,7 @@ import '../config/app_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_client.dart';
 
 class MaterialService {
   static final MaterialService _instance = MaterialService._internal();
@@ -31,7 +32,7 @@ class MaterialService {
     String? notes,
   }) async {
     try {
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/material/add-stock/'),
         headers: await _getHeaders(),
         body: json.encode({
@@ -68,7 +69,7 @@ class MaterialService {
   
   Future<Map<String, dynamic>> getMaterialStock(String siteId) async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/material/stock/?site_id=$siteId'),
         headers: await _getHeaders(),
       );
@@ -93,7 +94,7 @@ class MaterialService {
   
   Future<Map<String, dynamic>> getMaterialBalance(String siteId) async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/material/balance/?site_id=$siteId'),
         headers: await _getHeaders(),
       );
@@ -125,7 +126,7 @@ class MaterialService {
     String? notes,
   }) async {
     try {
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('$baseUrl/material/record-usage/'),
         headers: await _getHeaders(),
         body: json.encode({
@@ -172,7 +173,7 @@ class MaterialService {
         url += '&material_type=$materialType';
       }
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(url),
         headers: await _getHeaders(),
       );
@@ -198,7 +199,7 @@ class MaterialService {
   Future<Map<String, dynamic>> getTodayMaterialUsage(String siteId) async {
     try {
       final today = DateTime.now().toIso8601String().split('T')[0];
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/material/usage-history/?site_id=$siteId'),
         headers: await _getHeaders(),
       );
@@ -250,7 +251,7 @@ class MaterialService {
   
   Future<Map<String, dynamic>> getLowStockAlerts() async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/material/low-stock-alerts/'),
         headers: await _getHeaders(),
       );
@@ -276,7 +277,7 @@ class MaterialService {
   
   Future<Map<String, dynamic>> getMaterialTypes() async {
     try {
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('$baseUrl/material/types/'),
         headers: await _getHeaders(),
       );

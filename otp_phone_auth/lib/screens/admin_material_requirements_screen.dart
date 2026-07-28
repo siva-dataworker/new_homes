@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/construction_service.dart';
 import '../services/cache_service.dart';
-import '../utils/black_white_theme.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_logger.dart';
 
 class AdminMaterialRequirementsScreen extends StatefulWidget {
   const AdminMaterialRequirementsScreen({super.key});
@@ -48,7 +49,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
         }
       }
     } catch (e) {
-      print('Error loading material requirements: $e');
+      AppLogger.d('Error loading material requirements: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -87,18 +88,18 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BWColors.background,
+      backgroundColor: AppColors.bwBackground,
       appBar: AppBar(
         title: const Text('Material Requirements'),
-        backgroundColor: BWColors.card,
-        foregroundColor: BWColors.primary,
+        backgroundColor: AppColors.bwCard,
+        foregroundColor: AppColors.bwPrimary,
         elevation: 0,
       ),
       body: Column(
         children: [
           // Filter Chips
           Container(
-            color: BWColors.card,
+            color: AppColors.bwCard,
             padding: const EdgeInsets.all(16),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -132,13 +133,13 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.inventory_2_outlined,
-                                size: 64, color: BWColors.secondaryText),
+                                size: 64, color: AppColors.bwSecondaryText),
                             const SizedBox(height: 16),
                             Text(
                               'No material requirements',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: BWColors.secondaryText,
+                                color: AppColors.bwSecondaryText,
                               ),
                             ),
                           ],
@@ -169,10 +170,10 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
       onSelected: (selected) {
         setState(() => _filterStatus = value);
       },
-      backgroundColor: BWColors.surface,
-      selectedColor: BWColors.primary.withOpacity(0.2),
+      backgroundColor: AppColors.bwSurface,
+      selectedColor: AppColors.bwPrimary.withValues(alpha: 0.2),
       labelStyle: TextStyle(
-        color: isSelected ? BWColors.primary : BWColors.secondaryText,
+        color: isSelected ? AppColors.bwPrimary : AppColors.bwSecondaryText,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
@@ -182,7 +183,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
     final priority = req['priority'] ?? 'normal';
     final status = req['status'] ?? 'pending';
 
-    Color priorityColor = BWColors.muted;
+    Color priorityColor = AppColors.bwMuted;
     IconData priorityIcon = Icons.circle;
     if (priority == 'urgent') {
       priorityColor = Colors.red;
@@ -215,7 +216,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                 ),
@@ -227,7 +228,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
             // Quantity
             Row(
               children: [
-                const Icon(Icons.inventory_2, size: 16, color: BWColors.muted),
+                const Icon(Icons.inventory_2, size: 16, color: AppColors.bwMuted),
                 const SizedBox(width: 8),
                 Text(
                   '${req['quantity']} ${req['unit']}',
@@ -244,7 +245,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: BWColors.surface,
+                color: AppColors.bwSurface,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -252,7 +253,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.business, size: 14, color: BWColors.muted),
+                      const Icon(Icons.business, size: 14, color: AppColors.bwMuted),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -268,13 +269,13 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(Icons.location_city, size: 14, color: BWColors.muted),
+                      const Icon(Icons.location_city, size: 14, color: AppColors.bwMuted),
                       const SizedBox(width: 6),
                       Text(
                         '${req['area']} - ${req['street']}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: BWColors.secondaryText,
+                          color: AppColors.bwSecondaryText,
                         ),
                       ),
                     ],
@@ -283,13 +284,13 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.person, size: 14, color: BWColors.muted),
+                        const Icon(Icons.person, size: 14, color: AppColors.bwMuted),
                         const SizedBox(width: 6),
                         Text(
                           req['supervisor_name'],
                           style: TextStyle(
                             fontSize: 12,
-                            color: BWColors.secondaryText,
+                            color: AppColors.bwSecondaryText,
                           ),
                         ),
                       ],
@@ -305,23 +306,23 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: BWColors.primary.withOpacity(0.05),
+                  color: AppColors.bwPrimary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: BWColors.primary.withOpacity(0.2),
+                    color: AppColors.bwPrimary.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.note, size: 16, color: BWColors.primary),
+                    const Icon(Icons.note, size: 16, color: AppColors.bwPrimary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         req['notes'],
                         style: TextStyle(
                           fontSize: 13,
-                          color: BWColors.secondaryText,
+                          color: AppColors.bwSecondaryText,
                         ),
                       ),
                     ),
@@ -336,7 +337,7 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
               'Requested: ${req['created_at']}',
               style: TextStyle(
                 fontSize: 12,
-                color: BWColors.secondaryText,
+                color: AppColors.bwSecondaryText,
               ),
             ),
 
@@ -411,16 +412,16 @@ class _AdminMaterialRequirementsScreenState extends State<AdminMaterialRequireme
         label = 'Delivered';
         break;
       default:
-        color = BWColors.muted;
+        color = AppColors.bwMuted;
         label = status;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,

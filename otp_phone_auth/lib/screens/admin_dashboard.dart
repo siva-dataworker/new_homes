@@ -19,6 +19,8 @@ import 'admin_client_complaints_screen.dart';
 import 'admin_manage_users_screen.dart';
 import 'admin_all_working_sites_screen.dart';
 import 'admin_manage_materials_screen.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({Key? key}) : super(key: key);
@@ -163,7 +165,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           _unreadCount = cached['unread_count'];
           _notificationsLoaded = true;
         });
-        print('✅ [NOTIFICATIONS] Loaded ${_notifications.length} from persistent cache');
+        AppLogger.d('✅ [NOTIFICATIONS] Loaded ${_notifications.length} from persistent cache');
       }
     }
     
@@ -173,12 +175,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
     setState(() => _notificationsLoading = true);
 
     try {
-      print('🔍 [NOTIFICATIONS] Loading notifications from API...');
+      AppLogger.d('🔍 [NOTIFICATIONS] Loading notifications from API...');
       final result = await _notificationService.getNotifications();
       
-      print('🔍 [NOTIFICATIONS] Result: ${result['success']}');
-      print('🔍 [NOTIFICATIONS] Notifications count: ${result['notifications']?.length ?? 0}');
-      print('🔍 [NOTIFICATIONS] Unread count: ${result['unread_count']}');
+      AppLogger.d('🔍 [NOTIFICATIONS] Result: ${result['success']}');
+      AppLogger.d('🔍 [NOTIFICATIONS] Notifications count: ${result['notifications']?.length ?? 0}');
+      AppLogger.d('🔍 [NOTIFICATIONS] Unread count: ${result['unread_count']}');
       
       if (result['success'] == true && mounted) {
         final notifications = List<Map<String, dynamic>>.from(result['notifications'] ?? []);
@@ -193,9 +195,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
           _notificationsLoaded = true;
         });
         
-        print('✅ [NOTIFICATIONS] Loaded ${_notifications.length} notifications and saved to cache');
+        AppLogger.d('✅ [NOTIFICATIONS] Loaded ${_notifications.length} notifications and saved to cache');
       } else {
-        print('❌ [NOTIFICATIONS] Error: ${result['error']}');
+        AppLogger.d('❌ [NOTIFICATIONS] Error: ${result['error']}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -206,7 +208,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         }
       }
     } catch (e) {
-      print('❌ [NOTIFICATIONS] Exception: $e');
+      AppLogger.d('❌ [NOTIFICATIONS] Exception: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -230,7 +232,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         _loadNotifications(forceRefresh: true); // Refresh list
       }
     } catch (e) {
-      print('Error marking notification as read: $e');
+      AppLogger.d('Error marking notification as read: $e');
     }
   }
 
@@ -248,7 +250,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         _loadNotifications(forceRefresh: true); // Refresh list
       }
     } catch (e) {
-      print('Error marking all notifications as read: $e');
+      AppLogger.d('Error marking all notifications as read: $e');
     }
   }
 
@@ -452,26 +454,26 @@ class _AdminDashboardState extends State<AdminDashboard> {
     setState(() => _sitesLoading = true);
     try {
       final token = await _authService.getToken();
-      print('🔍 Loading areas from: $_sitesBaseUrl/construction/areas/');
-      final res = await http.get(
+      AppLogger.d('🔍 Loading areas from: $_sitesBaseUrl/construction/areas/');
+      final res = await ApiClient.get(
         Uri.parse('$_sitesBaseUrl/construction/areas/'),
         headers: {'Authorization': 'Bearer ${token ?? ''}'},
       );
-      print('🔍 Areas response status: ${res.statusCode}');
+      AppLogger.d('🔍 Areas response status: ${res.statusCode}');
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
-        print('🔍 Areas data: $data');
+        AppLogger.d('🔍 Areas data: $data');
         if (mounted) {
           setState(() {
             _areas = List<String>.from(data['areas'] ?? []);
           });
         }
-        print('🔍 Loaded ${_areas.length} areas');
+        AppLogger.d('🔍 Loaded ${_areas.length} areas');
       } else {
-        print('❌ Failed to load areas: ${res.statusCode} - ${res.body}');
+        AppLogger.d('❌ Failed to load areas: ${res.statusCode} - ${res.body}');
       }
     } catch (e) {
-      print('❌ Error loading areas: $e');
+      AppLogger.d('❌ Error loading areas: $e');
     }
     if (mounted) setState(() => _sitesLoading = false);
   }
@@ -497,7 +499,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
     try {
       final token = await _authService.getToken();
-      final res = await http.get(
+      final res = await ApiClient.get(
         Uri.parse('$_sitesBaseUrl/construction/streets/${Uri.encodeComponent(area)}/'),
         headers: {'Authorization': 'Bearer ${token ?? ''}'},
       );
@@ -513,7 +515,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         }
       }
     } catch (e) {
-      print('❌ Error loading streets: $e');
+      AppLogger.d('❌ Error loading streets: $e');
     }
     if (mounted) setState(() => _sitesLoading = false);
   }
@@ -536,7 +538,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     });
     try {
       final token = await _authService.getToken();
-      final res = await http.get(
+      final res = await ApiClient.get(
         Uri.parse(
             '$_sitesBaseUrl/construction/sites/?area=${Uri.encodeComponent(area)}&street=${Uri.encodeComponent(street)}'),
         headers: {'Authorization': 'Bearer ${token ?? ''}'},
@@ -553,7 +555,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         }
       }
     } catch (e) {
-      print('❌ Error loading sites: $e');
+      AppLogger.d('❌ Error loading sites: $e');
     }
     if (mounted) setState(() => _sitesLoading = false);
   }
@@ -1559,7 +1561,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isRead ? Colors.transparent : entryColor.withOpacity(0.3),
+          color: isRead ? Colors.transparent : entryColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -1580,7 +1582,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: entryColor.withOpacity(0.1),
+                      color: entryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -2203,7 +2205,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             // Load streets for selected area
                             if (value != null) {
                               final token = await _authService.getToken();
-                              final res = await http.get(
+                              final res = await ApiClient.get(
                                 Uri.parse('$_sitesBaseUrl/construction/streets/${Uri.encodeComponent(value)}/'),
                                 headers: {'Authorization': 'Bearer ${token ?? ''}'},
                               );
@@ -2344,7 +2346,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       
                       try {
                         final token = await _authService.getToken();
-                        final response = await http.post(
+                        final response = await ApiClient.post(
                           Uri.parse('$_sitesBaseUrl/construction/create-site/'),
                           headers: {
                             'Content-Type': 'application/json',
@@ -2455,7 +2457,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     // Load roles
     try {
       final token = await _authService.getToken();
-      final res = await http.get(
+      final res = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/admin/roles/'),
         headers: {'Authorization': 'Bearer ${token ?? ''}'},
       );
@@ -2547,24 +2549,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               value: r, child: Text(r)))
                           .toList(),
                       onChanged: (v) async {
-                        print('🎯 ROLE CHANGED TO: $v');
+                        AppLogger.d('🎯 ROLE CHANGED TO: $v');
                         setDS(() => selectedRole = v);
                         
                         // Load sites if Client role is selected
                         final isClient = v?.toLowerCase() == 'client';
-                        print('🎯 Is client role: $isClient');
-                        print('🎯 All sites count: ${allSites.length}');
-                        print('🎯 Loading sites: $loadingSites');
+                        AppLogger.d('🎯 Is client role: $isClient');
+                        AppLogger.d('🎯 All sites count: ${allSites.length}');
+                        AppLogger.d('🎯 Loading sites: $loadingSites');
                         
                         if (isClient && allSites.isEmpty) {
-                          print('🎯 Starting to load sites...');
+                          AppLogger.d('🎯 Starting to load sites...');
                           setDS(() => loadingSites = true);
                           try {
                             final token = await _authService.getToken();
                             final url = '${AuthService.baseUrl}/construction/all-sites/';
-                            print('🎯 Fetching from: $url');
+                            AppLogger.d('🎯 Fetching from: $url');
                             
-                            final res = await http.get(
+                            final res = await ApiClient.get(
                               Uri.parse(url),
                               headers: {
                                 'Authorization': 'Bearer ${token ?? ''}',
@@ -2572,24 +2574,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               },
                             );
                             
-                            print('🎯 Response: ${res.statusCode}');
+                            AppLogger.d('🎯 Response: ${res.statusCode}');
                             
                             if (res.statusCode == 200) {
                               final data = json.decode(res.body);
                               final sites = List<Map<String, dynamic>>.from(data['sites'] ?? []);
-                              print('🎯 ✅ Loaded ${sites.length} sites');
+                              AppLogger.d('🎯 ✅ Loaded ${sites.length} sites');
                               
                               setDS(() {
                                 allSites = sites;
                                 loadingSites = false;
                               });
-                              print('🎯 State updated - allSites now has ${allSites.length} items');
+                              AppLogger.d('🎯 State updated - allSites now has ${allSites.length} items');
                             } else {
-                              print('🎯 ❌ Failed: ${res.statusCode}');
+                              AppLogger.d('🎯 ❌ Failed: ${res.statusCode}');
                               setDS(() => loadingSites = false);
                             }
                           } catch (e) {
-                            print('🎯 ❌ Error: $e');
+                            AppLogger.d('🎯 ❌ Error: $e');
                             setDS(() => loadingSites = false);
                           }
                         }
@@ -2602,10 +2604,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     if (isClientRole) ...[
                       Builder(
                         builder: (context) {
-                          print('🎯 RENDERING SITE SELECTION UI');
-                          print('🎯 isClientRole: $isClientRole');
-                          print('🎯 loadingSites: $loadingSites');
-                          print('🎯 allSites.length: ${allSites.length}');
+                          AppLogger.d('🎯 RENDERING SITE SELECTION UI');
+                          AppLogger.d('🎯 isClientRole: $isClientRole');
+                          AppLogger.d('🎯 loadingSites: $loadingSites');
+                          AppLogger.d('🎯 allSites.length: ${allSites.length}');
                           return Column(
                             children: [
                               const SizedBox(height: 16),
@@ -2746,7 +2748,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             body['site_ids'] = selectedSiteIds.toList();
                           }
                           
-                          final res = await http.post(
+                          final res = await ApiClient.post(
                             Uri.parse(
                                 '${AuthService.baseUrl}/admin/create-user/'),
                             headers: {
@@ -2889,7 +2891,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       setDS(() => isSaving = true);
                       try {
                         final token = await _authService.getToken();
-                        final res = await http.post(
+                        final res = await ApiClient.post(
                           Uri.parse(
                               '${AuthService.baseUrl}/admin/create-admin/'),
                           headers: {
@@ -3001,7 +3003,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       setDS(() => isSaving = true);
                       try {
                         final token = await _authService.getToken();
-                        final res = await http.post(
+                        final res = await ApiClient.post(
                           Uri.parse(
                               '${AuthService.baseUrl}/admin/create-role/'),
                           headers: {

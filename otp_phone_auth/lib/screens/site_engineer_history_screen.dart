@@ -236,7 +236,7 @@ class _SiteEngineerHistoryScreenState extends State<SiteEngineerHistoryScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -258,7 +258,7 @@ class _SiteEngineerHistoryScreenState extends State<SiteEngineerHistoryScreen> {
             child: Container(
               padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
-                color: AppColors.deepNavy.withOpacity(0.05),
+                color: AppColors.deepNavy.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(16.r),
                   bottom: isExpanded ? Radius.zero : Radius.circular(16.r),

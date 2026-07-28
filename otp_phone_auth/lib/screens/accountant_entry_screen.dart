@@ -1,5 +1,6 @@
 import '../config/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,8 +15,9 @@ import '../providers/construction_provider.dart';
 import '../providers/change_request_provider.dart';
 import '../utils/app_colors.dart';
 import 'login_screen.dart';
-import 'accountant_bills_screen.dart';
 import 'assign_working_sites_screen.dart';
+import '../utils/string_utils.dart';
+import '../utils/app_logger.dart';
 
 class AccountantEntryScreen extends StatefulWidget {
   const AccountantEntryScreen({super.key});
@@ -110,7 +112,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
         });
       }
     } catch (e) {
-      print('Error loading areas: $e');
+      AppLogger.d('Error loading areas: $e');
     } finally {
       setState(() => _isLoadingAreas = false);
     }
@@ -146,7 +148,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
         });
       }
     } catch (e) {
-      print('Error loading streets: $e');
+      AppLogger.d('Error loading streets: $e');
     } finally {
       setState(() => _isLoadingStreets = false);
     }
@@ -180,7 +182,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
         });
       }
     } catch (e) {
-      print('Error loading sites: $e');
+      AppLogger.d('Error loading sites: $e');
     } finally {
       setState(() => _isLoadingSites = false);
     }
@@ -223,7 +225,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
   }
 
   void _onSiteChanged(String? siteId) {
-    print('🔍 [SITE_CHANGED] Site changed to: $siteId');
+    AppLogger.d('🔍 [SITE_CHANGED] Site changed to: $siteId');
     setState(() => _selectedSite = siteId);
     
     if (siteId != null) {
@@ -234,7 +236,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
   
   // Load all 12 combinations (3 roles × 4 tabs) from cache
   Future<void> _loadAllSiteDataWithCache(String siteId) async {
-    print('🏗️ [SITE_VIEW] Loading all data for site: $siteId');
+    AppLogger.d('🏗️ [SITE_VIEW] Loading all data for site: $siteId');
     
     final roles = ['Supervisor', 'Site Engineer', 'Architect'];
     
@@ -264,7 +266,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
       setState(() {
         _siteDataCache[cacheKey] = cachedData;
       });
-      print('✅ [SITE_VIEW] Loaded labour from cache: $role');
+      AppLogger.d('✅ [SITE_VIEW] Loaded labour from cache: $role');
     }
     
     // Refresh from API in background (silent)
@@ -280,7 +282,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
       setState(() {
         _siteDataCache[cacheKey] = cachedData;
       });
-      print('✅ [SITE_VIEW] Loaded materials from cache: $role');
+      AppLogger.d('✅ [SITE_VIEW] Loaded materials from cache: $role');
     }
     
     // Refresh from API in background (silent)
@@ -296,7 +298,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
       setState(() {
         _siteDataCache[cacheKey] = cachedData;
       });
-      print('✅ [SITE_VIEW] Loaded requests from cache: $role');
+      AppLogger.d('✅ [SITE_VIEW] Loaded requests from cache: $role');
     }
     
     // Refresh from API in background (silent)
@@ -312,7 +314,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
       setState(() {
         _siteDataCache[cacheKey] = cachedData;
       });
-      print('✅ [SITE_VIEW] Loaded photos from cache: $role');
+      AppLogger.d('✅ [SITE_VIEW] Loaded photos from cache: $role');
     }
     
     // Refresh from API in background (silent)
@@ -350,7 +352,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
       (_) => _refreshPhotosDataInBackground(siteId, role),
     );
     
-    print('🔄 [SITE_VIEW] Background refresh started for: $role');
+    AppLogger.d('🔄 [SITE_VIEW] Background refresh started for: $role');
   }
   
   Future<void> _refreshLabourDataInBackground(String siteId, String role) async {
@@ -367,9 +369,9 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
           _siteDataCache[cacheKey] = newData;
         });
       }
-      print('✅ [SITE_VIEW] Labour data refreshed: $role');
+      AppLogger.d('✅ [SITE_VIEW] Labour data refreshed: $role');
     } catch (e) {
-      print('⚠️ [SITE_VIEW] Background refresh failed for labour: $e');
+      AppLogger.d('⚠️ [SITE_VIEW] Background refresh failed for labour: $e');
     }
   }
   
@@ -387,9 +389,9 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
           _siteDataCache[cacheKey] = newData;
         });
       }
-      print('✅ [SITE_VIEW] Materials data refreshed: $role');
+      AppLogger.d('✅ [SITE_VIEW] Materials data refreshed: $role');
     } catch (e) {
-      print('⚠️ [SITE_VIEW] Background refresh failed for materials: $e');
+      AppLogger.d('⚠️ [SITE_VIEW] Background refresh failed for materials: $e');
     }
   }
   
@@ -407,9 +409,9 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
           _siteDataCache[cacheKey] = newData;
         });
       }
-      print('✅ [SITE_VIEW] Requests data refreshed: $role');
+      AppLogger.d('✅ [SITE_VIEW] Requests data refreshed: $role');
     } catch (e) {
-      print('⚠️ [SITE_VIEW] Background refresh failed for requests: $e');
+      AppLogger.d('⚠️ [SITE_VIEW] Background refresh failed for requests: $e');
     }
   }
   
@@ -427,9 +429,9 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
           _siteDataCache[cacheKey] = newData;
         });
       }
-      print('✅ [SITE_VIEW] Photos data refreshed: $role');
+      AppLogger.d('✅ [SITE_VIEW] Photos data refreshed: $role');
     } catch (e) {
-      print('⚠️ [SITE_VIEW] Background refresh failed for photos: $e');
+      AppLogger.d('⚠️ [SITE_VIEW] Background refresh failed for photos: $e');
     }
   }
 
@@ -442,32 +444,32 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
   }
 
   Future<void> _loadMismatchData() async {
-    print('🔍 [MISMATCH] _loadMismatchData called, _selectedSite: $_selectedSite');
+    AppLogger.d('🔍 [MISMATCH] _loadMismatchData called, _selectedSite: $_selectedSite');
     if (_selectedSite == null) {
-      print('⚠️ [MISMATCH] No site selected, skipping mismatch detection');
+      AppLogger.d('⚠️ [MISMATCH] No site selected, skipping mismatch detection');
       return;
     }
     
-    print('🔍 [MISMATCH] Fetching mismatches for site: $_selectedSite');
+    AppLogger.d('🔍 [MISMATCH] Fetching mismatches for site: $_selectedSite');
     try {
       final result = await _mismatchService.detectLaborMismatches(
         siteId: _selectedSite,
         days: 7,
       );
       
-      print('🔍 [MISMATCH] API response: ${result['success']}, total: ${result['total_mismatches']}');
+      AppLogger.d('🔍 [MISMATCH] API response: ${result['success']}, total: ${result['total_mismatches']}');
       
       if (result['success'] == true) {
         setState(() {
           _mismatchData = result;
           _totalMismatches = result['total_mismatches'] ?? 0;
         });
-        print('✅ [MISMATCH] Loaded $_totalMismatches mismatches');
+        AppLogger.d('✅ [MISMATCH] Loaded $_totalMismatches mismatches');
       } else {
-        print('⚠️ [MISMATCH] API returned success=false: ${result['error']}');
+        AppLogger.d('⚠️ [MISMATCH] API returned success=false: ${result['error']}');
       }
     } catch (e) {
-      print('❌ [MISMATCH] Error loading mismatch data: $e');
+      AppLogger.d('❌ [MISMATCH] Error loading mismatch data: $e');
     }
   }
 
@@ -506,46 +508,36 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
-                  child: Image.network(
-                    ConstructionService.getFullImageUrl(photo['image_url']),
+                  child: CachedNetworkImage(
+                    imageUrl: ConstructionService.getFullImageUrl(photo['image_url']),
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.white,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.image_not_supported,
-                              size: 40.sp,
-                              color: AppColors.textSecondary.withValues(alpha: 0.5),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'Image not available',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: AppColors.textSecondary.withValues(alpha: 0.7),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: Colors.white,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.deepNavy,
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                : null,
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.white,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.image_not_supported,
+                            size: 40.sp,
+                            color: AppColors.textSecondary.withValues(alpha: 0.5),
                           ),
-                        ),
-                      );
-                    },
+                          SizedBox(height: 8.h),
+                          Text(
+                            'Image not available',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: AppColors.textSecondary.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    placeholder: (context, url) => Container(
+                      color: Colors.white,
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppColors.deepNavy),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -665,18 +657,16 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
                   padding: EdgeInsets.all(16.r),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
-                    child: Image.network(
-                      ConstructionService.getFullImageUrl(photo['image_url']),
+                    child: CachedNetworkImage(
+                      imageUrl: ConstructionService.getFullImageUrl(photo['image_url']),
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 200.h,
-                          color: Colors.white,
-                          child: const Center(
-                            child: Text('Image not available'),
-                          ),
-                        );
-                      },
+                      errorWidget: (context, url, error) => Container(
+                        height: 200.h,
+                        color: Colors.white,
+                        child: const Center(
+                          child: Text('Image not available'),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -805,7 +795,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        (_currentUser?['full_name'] ?? 'A').substring(0, 1).toUpperCase(),
+                        avatarInitial(_currentUser?['full_name'] as String?, 'A'),
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -1012,7 +1002,7 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
                     icon: Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28.sp),
                     tooltip: 'Labor Entry Mismatches',
                     onPressed: () {
-                      print('🔍 [BUTTON] Warning icon clicked!');
+                      AppLogger.d('🔍 [BUTTON] Warning icon clicked!');
                       _showMismatchDialog();
                     },
                   ),
@@ -2704,12 +2694,12 @@ class _AccountantEntryScreenState extends State<AccountantEntryScreen> {
   }
 
   void _showMismatchDialog() {
-    print('🔍 [MISMATCH DIALOG] _showMismatchDialog called');
-    print('🔍 [MISMATCH DIALOG] _totalMismatches: $_totalMismatches');
-    print('🔍 [MISMATCH DIALOG] _mismatchData keys: ${_mismatchData.keys}');
+    AppLogger.d('🔍 [MISMATCH DIALOG] _showMismatchDialog called');
+    AppLogger.d('🔍 [MISMATCH DIALOG] _totalMismatches: $_totalMismatches');
+    AppLogger.d('🔍 [MISMATCH DIALOG] _mismatchData keys: ${_mismatchData.keys}');
     
     final mismatches = _mismatchData['mismatches'] as List<Map<String, dynamic>>? ?? [];
-    print('🔍 [MISMATCH DIALOG] mismatches count: ${mismatches.length}');
+    AppLogger.d('🔍 [MISMATCH DIALOG] mismatches count: ${mismatches.length}');
     
     showDialog(
       context: context,
@@ -3030,7 +3020,7 @@ class _AccountantDocumentsViewState extends State<_AccountantDocumentsView> with
         });
       }
     } catch (e) {
-      print('Error loading documents: $e');
+      AppLogger.d('Error loading documents: $e');
     } finally {
       setState(() => _isLoading = false);
     }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/construction_provider.dart';
@@ -8,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/construction_service.dart';
 import '../services/budget_management_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/performance_config.dart'; // ⭐ NEW - Cache config
 import '../widgets/common_widgets.dart';
 import '../models/user_model.dart';
 import 'login_screen.dart';
@@ -17,6 +17,9 @@ import 'site_engineer_document_screen.dart';
 import 'site_engineer_labour_screen.dart';
 import 'site_engineer_reports_screen.dart';
 import 'edit_profile_screen.dart';
+import '../services/api_client.dart';
+import '../utils/app_logger.dart';
+import '../utils/currency_formatter.dart';
 
 class SiteEngineerDashboard extends StatefulWidget {
   final UserModel user;
@@ -42,18 +45,65 @@ class _SiteEngineerDashboardState extends State<SiteEngineerDashboard> {
   final Map<String, Map<String, bool>> _uploadStatus =
       {}; // site_id -> {morning: bool, evening: bool}
 
+  // Dashboard data cache
+  Map<String, dynamic>? _cachedDashboardData;
+  bool _isLoadingFresh = false;
+
   @override
   void initState() {
     super.initState();
     _user = widget.user;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
+      _loadDataWithCache();
     });
   }
 
+  // ⭐ NEW - Load with cache-first strategy
+  Future<void> _loadDataWithCache() async {
+    // 1. Try to load from cache first (instant display)
+    final cache = SimpleCache();
+    final cacheKey = 'site_engineer_dashboard_${_user.uid}'; // Fixed: use uid
+    _cachedDashboardData = cache.get<Map<String, dynamic>>(cacheKey);
+    
+    if (_cachedDashboardData != null && mounted) {
+      setState(() {
+        // Display cached data immediately
+      });
+    }
+    
+    // 2. Fetch fresh data in background
+    await _loadData();
+    
+    // 3. Update cache
+    if (mounted) {
+      final dashboardData = {
+        'sites': context.read<ConstructionProvider>().sites,
+        'upload_status': _uploadStatus,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      cache.set(
+        cacheKey,
+        dashboardData,
+        duration: PerformanceConfig.mediumCacheDuration,
+      );
+    }
+  }
+
   Future<void> _loadData() async {
-    await context.read<ConstructionProvider>().loadSites();
-    await _loadUploadStatuses();
+    setState(() {
+      _isLoadingFresh = true;
+    });
+    
+    try {
+      await context.read<ConstructionProvider>().loadSites();
+      await _loadUploadStatuses();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingFresh = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadUploadStatuses() async {
@@ -67,7 +117,7 @@ class _SiteEngineerDashboardState extends State<SiteEngineerDashboard> {
     try {
       final token = await _authService.getToken();
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(
           '${AuthService.baseUrl}/construction/today-upload-status/$siteId/',
         ),
@@ -412,14 +462,14 @@ class _SiteEngineerDashboardState extends State<SiteEngineerDashboard> {
         .toList()
         ..sort();
 
-    print('🔍 [SITES TAB] Sites count: ${sites.length}');
+    AppLogger.d('🔍 [SITES TAB] Sites count: ${sites.length}');
     if (sites.isNotEmpty) {
-      print('🔍 [SITES TAB] First site data: ${sites[0]}');
-      print('🔍 [SITES TAB] Site keys: ${sites[0].keys.toList()}');
+      AppLogger.d('🔍 [SITES TAB] First site data: ${sites[0]}');
+      AppLogger.d('🔍 [SITES TAB] Site keys: ${sites[0].keys.toList()}');
     }
-    print('🔍 [SITES TAB] Unique Areas: $uniqueAreas');
-    print('🔍 [SITES TAB] Unique Streets: $uniqueStreets');
-    print('🔍 [SITES TAB] Selected Area: $_selectedArea, Selected Street: $_selectedStreet');
+    AppLogger.d('🔍 [SITES TAB] Unique Areas: $uniqueAreas');
+    AppLogger.d('🔍 [SITES TAB] Unique Streets: $uniqueStreets');
+    AppLogger.d('🔍 [SITES TAB] Selected Area: $_selectedArea, Selected Street: $_selectedStreet');
 
     // Apply filters
     final filteredSites = sites.where((site) {
@@ -588,7 +638,7 @@ class _SiteEngineerDashboardState extends State<SiteEngineerDashboard> {
                             }).toList(),
                           ],
                           onChanged: (value) {
-                            print('📍 Area selected: $value');
+                            AppLogger.d('📍 Area selected: $value');
                             setState(() => _selectedArea = value);
                           },
                         ),
@@ -644,7 +694,7 @@ class _SiteEngineerDashboardState extends State<SiteEngineerDashboard> {
                             }).toList(),
                           ],
                           onChanged: (value) {
-                            print('🛣️ Street selected: $value');
+                            AppLogger.d('🛣️ Street selected: $value');
                             setState(() => _selectedStreet = value);
                           },
                         ),
@@ -1353,21 +1403,13 @@ class _SiteEngineerDashboardState extends State<SiteEngineerDashboard> {
     );
   }
 
-  String _formatCurrency(dynamic amount) {
-    if (amount == null) return '₹0';
-    double value = amount is String
-        ? double.tryParse(amount) ?? 0
-        : amount.toDouble();
-
-    if (value >= 10000000) {
-      return '₹${(value / 10000000).toStringAsFixed(2)} Cr';
-    } else if (value >= 100000) {
-      return '₹${(value / 100000).toStringAsFixed(2)} L';
-    } else if (value >= 1000) {
-      return '₹${(value / 1000).toStringAsFixed(2)} K';
-    }
-    return '₹${value.toStringAsFixed(0)}';
-  }
+  String _formatCurrency(dynamic amount) => formatIndianAmount(
+        amount,
+        prefix: '₹',
+        spaceBeforeUnit: true,
+        nullFallback: '0',
+        baseDecimals: 0,
+      );
 
   void _showSiteSelectionDialog({
     required String title,

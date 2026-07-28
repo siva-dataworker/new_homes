@@ -4,6 +4,7 @@ import '../services/construction_service.dart';
 import '../services/budget_management_service.dart';
 import '../utils/app_colors.dart';
 import 'site_engineer_history_screen.dart';
+import '../utils/app_logger.dart';
 
 class SiteEngineerLabourScreen extends StatefulWidget {
   final String siteId;
@@ -100,7 +101,7 @@ class _SiteEngineerLabourScreenState extends State<SiteEngineerLabourScreen>
         _isLoadingRates = false;
       });
 
-      print('✅ [Site Engineer] Loaded ${loaded.length} labour types from admin');
+      AppLogger.d('✅ [Site Engineer] Loaded ${loaded.length} labour types from admin');
     } else {
       setState(() => _isLoadingRates = false);
     }
@@ -148,7 +149,7 @@ class _SiteEngineerLabourScreenState extends State<SiteEngineerLabourScreen>
         });
       }
     } catch (e) {
-      print('Error checking today lock: $e');
+      AppLogger.d('Error checking today lock: $e');
     } finally {
       if (mounted) setState(() => _isCheckingLock = false);
     }
@@ -188,7 +189,7 @@ class _SiteEngineerLabourScreenState extends State<SiteEngineerLabourScreen>
         });
       }
     } catch (e) {
-      print('Error loading morning entries for evening tab: $e');
+      AppLogger.d('Error loading morning entries for evening tab: $e');
     } finally {
       setState(() => _isLoadingEveningData = false);
     }
@@ -445,7 +446,7 @@ class _SiteEngineerLabourScreenState extends State<SiteEngineerLabourScreen>
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -738,7 +739,7 @@ class _SiteEngineerLabourScreenState extends State<SiteEngineerLabourScreen>
             width: 40.w,
             height: 40.h,
             decoration: BoxDecoration(
-              color: AppColors.deepNavy.withOpacity(0.08),
+              color: AppColors.deepNavy.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(_getLabourIcon(labourType), size: 20.sp, color: AppColors.deepNavy),

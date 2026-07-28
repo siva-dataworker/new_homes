@@ -6,7 +6,6 @@ import '../services/auth_service.dart';
 import '../services/construction_service.dart';
 import '../providers/construction_provider.dart';
 import '../utils/app_colors.dart';
-import '../utils/black_white_theme.dart';
 import '../widgets/common_widgets.dart';
 import 'login_screen.dart';
 import 'site_detail_screen.dart';
@@ -15,6 +14,8 @@ import '../widgets/supervisor_material_usage_dialog.dart';
 import 'working_sites_screen.dart';
 import 'supervisor_reports_screen.dart';
 import '../services/cache_service.dart';
+import '../utils/string_utils.dart';
+import '../utils/app_logger.dart';
 
 class SupervisorDashboardFeed extends StatefulWidget {
   const SupervisorDashboardFeed({super.key});
@@ -96,7 +97,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         setState(() { _areas = areas; });
       }
     } catch (e) {
-      print('Error loading areas: $e');
+      AppLogger.d('Error loading areas: $e');
     } finally {
       setState(() => _isLoadingAreas = false);
     }
@@ -117,7 +118,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         setState(() { _workingSites = sites; });
       }
     } catch (e) {
-      print('Error loading working sites: $e');
+      AppLogger.d('Error loading working sites: $e');
     } finally {
       setState(() => _isLoadingWorkingSites = false);
     }
@@ -138,7 +139,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         setState(() { _todaySitesWithData = sites; });
       }
     } catch (e) {
-      print('Error loading today sites with data: $e');
+      AppLogger.d('Error loading today sites with data: $e');
     } finally {
       setState(() => _isLoadingTodaySites = false);
     }
@@ -171,7 +172,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         });
       }
     } catch (e) {
-      print('Error loading total counts: $e');
+      AppLogger.d('Error loading total counts: $e');
     } finally {
       setState(() => _isLoadingTotals = false);
     }
@@ -197,7 +198,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         _streets = streets;
       });
     } catch (e) {
-      print('Error loading streets: $e');
+      AppLogger.d('Error loading streets: $e');
       // Fallback to direct API call
       try {
         final provider = context.read<ConstructionProvider>();
@@ -208,7 +209,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           });
         }
       } catch (e2) {
-        print('Fallback also failed: $e2');
+        AppLogger.d('Fallback also failed: $e2');
       }
     } finally {
       setState(() => _isLoadingStreets = false);
@@ -231,7 +232,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         });
       }
     } catch (e) {
-      print('Error loading sites: $e');
+      AppLogger.d('Error loading sites: $e');
     } finally {
       setState(() => _isLoadingSites = false);
     }
@@ -306,7 +307,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
     }
 
     return Scaffold(
-      backgroundColor: BWColors.background,
+      backgroundColor: AppColors.bwBackground,
       body: currentScreen,
       bottomNavigationBar: _buildBottomNav(),
     );
@@ -319,7 +320,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         SliverAppBar(
           floating: true,
           snap: true,
-          backgroundColor: BWColors.card,
+          backgroundColor: AppColors.bwCard,
           elevation: 0,
           toolbarHeight: 70,
           title: Row(
@@ -328,11 +329,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                 width: 45.w,
                 height: 45.h,
                 decoration: BoxDecoration(
-                  gradient: BWColors.bwGradient,
+                  gradient: AppColors.bwGradient,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: BWColors.primary.withOpacity(0.3),
+                      color: AppColors.bwPrimary.withValues(alpha: 0.3),
                       blurRadius: 8.r,
                       offset: const Offset(0, 2),
                     ),
@@ -340,7 +341,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                 ),
                 child: Center(
                   child: Text(
-                    (_currentUser?['full_name'] ?? 'S').substring(0, 1).toUpperCase(),
+                    avatarInitial(_currentUser?['full_name'] as String?, 'S'),
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -360,7 +361,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                       style: TextStyle(
                         fontSize: 17.sp,
                         fontWeight: FontWeight.bold,
-                        color: BWColors.primary,
+                        color: AppColors.bwPrimary,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -371,7 +372,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                           width: 8.w,
                           height: 8.h,
                           decoration: const BoxDecoration(
-                            color: BWColors.primary,
+                            color: AppColors.bwPrimary,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -380,7 +381,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                           'Active Now',
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: BWColors.secondaryText,
+                            color: AppColors.bwSecondaryText,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -396,7 +397,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         // Dashboard Stats Section
         SliverToBoxAdapter(
           child: Container(
-            color: BWColors.card,
+            color: AppColors.bwCard,
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,7 +407,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
-                    color: BWColors.primary,
+                    color: AppColors.bwPrimary,
                   ),
                 ),
                 SizedBox(height: 16.h),
@@ -417,7 +418,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         title: 'Total Areas',
                         value: _areas.length.toString(),
                         icon: Icons.location_city,
-                        color: BWColors.primary,
+                        color: AppColors.bwPrimary,
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -426,7 +427,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         title: 'Available Sites',
                         value: _sites.length.toString(),
                         icon: Icons.construction,
-                        color: BWColors.muted,
+                        color: AppColors.bwMuted,
                       ),
                     ),
                   ],
@@ -442,7 +443,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         // Welcome Section
         SliverToBoxAdapter(
           child: Container(
-            color: BWColors.card,
+            color: AppColors.bwCard,
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,7 +453,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
-                    color: BWColors.primary,
+                    color: AppColors.bwPrimary,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -460,7 +461,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   'Choose area, street, and site to view details',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: BWColors.secondaryText,
+                    color: AppColors.bwSecondaryText,
                   ),
                 ),
               ],
@@ -474,11 +475,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
             margin: EdgeInsets.all(16.r),
             padding: EdgeInsets.all(20.r),
             decoration: BoxDecoration(
-              color: BWColors.card,
+              color: AppColors.bwCard,
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: BWColors.primary.withOpacity(0.08),
+                  color: AppColors.bwPrimary.withValues(alpha: 0.08),
                   blurRadius: 20.r,
                   offset: const Offset(0, 4),
                 ),
@@ -537,14 +538,14 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
-                          color: BWColors.primary,
+                          color: AppColors.bwPrimary,
                         ),
                       ),
                       Text(
                         '${_sites.length} sites',
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: BWColors.secondaryText,
+                          color: AppColors.bwSecondaryText,
                         ),
                       ),
                     ],
@@ -558,7 +559,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         'And ${_sites.length - 5} more sites...',
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: BWColors.secondaryText,
+                          color: AppColors.bwSecondaryText,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -575,11 +576,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
               margin: EdgeInsets.symmetric(horizontal: 16.w),
               padding: EdgeInsets.all(20.r),
               decoration: BoxDecoration(
-                gradient: BWColors.bwGradient,
+                gradient: AppColors.bwGradient,
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: BWColors.primary.withOpacity(0.3),
+                    color: AppColors.bwPrimary.withValues(alpha: 0.3),
                     blurRadius: 20.r,
                     offset: const Offset(0, 4),
                   ),
@@ -595,10 +596,10 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
             margin: EdgeInsets.all(16.r),
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: BWColors.surface,
+              color: AppColors.bwSurface,
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: BWColors.primary.withOpacity(0.2),
+                color: AppColors.bwPrimary.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -606,7 +607,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: BWColors.primary,
+                  color: AppColors.bwPrimary,
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -615,7 +616,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     'Select area first, then street, and finally the site to view details and manage construction activities.',
                     style: TextStyle(
                       fontSize: 13.sp,
-                      color: BWColors.secondaryText,
+                      color: AppColors.bwSecondaryText,
                       height: 1.4,
                     ),
                   ),
@@ -635,11 +636,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       slivers: [
         SliverAppBar(
           floating: true,
-          backgroundColor: BWColors.card,
+          backgroundColor: AppColors.bwCard,
           elevation: 0,
           title: const Text(
             'Statistics',
-            style: TextStyle(color: BWColors.primary),
+            style: TextStyle(color: AppColors.bwPrimary),
           ),
         ),
         SliverToBoxAdapter(
@@ -653,21 +654,21 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   title: 'Total Areas',
                   value: _totalAreas.toString(),
                   icon: Icons.location_city,
-                  color: BWColors.primary,
+                  color: AppColors.bwPrimary,
                 ),
                 SizedBox(height: 16.h),
                 SummaryCard(
                   title: 'Total Streets',
                   value: _totalStreets.toString(),
                   icon: Icons.route,
-                  color: BWColors.muted,
+                  color: AppColors.bwMuted,
                 ),
                 SizedBox(height: 16.h),
                 SummaryCard(
                   title: 'Total Sites',
                   value: _totalSites.toString(),
                   icon: Icons.business,
-                  color: BWColors.primary,
+                  color: AppColors.bwPrimary,
                 ),
 
                 SizedBox(height: 32.h),
@@ -724,24 +725,24 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         leading: Container(
           padding: EdgeInsets.all(8.r),
           decoration: BoxDecoration(
-            color: BWColors.primary.withOpacity(0.1),
+            color: AppColors.bwPrimary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, color: BWColors.primary, size: 24.sp),
+          child: Icon(icon, color: AppColors.bwPrimary, size: 24.sp),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.bold,
-            color: BWColors.primary,
+            color: AppColors.bwPrimary,
           ),
         ),
         subtitle: Text(
           '$count ${count == 1 ? 'site' : 'sites'}',
           style: TextStyle(
             fontSize: 13.sp,
-            color: BWColors.secondaryText,
+            color: AppColors.bwSecondaryText,
           ),
         ),
         trailing: Row(
@@ -774,13 +775,13 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.inbox_outlined, size: 48.sp, color: BWColors.muted),
+                    Icon(Icons.inbox_outlined, size: 48.sp, color: AppColors.bwMuted),
                     SizedBox(height: 12.h),
                     Text(
                       emptyMessage,
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: BWColors.secondaryText,
+                        color: AppColors.bwSecondaryText,
                       ),
                     ),
                   ],
@@ -797,8 +798,8 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
   Widget _buildSiteListItem(Map<String, dynamic> site) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: BWColors.primary.withOpacity(0.1),
-        child: Icon(Icons.location_on, color: BWColors.primary, size: 20.sp),
+        backgroundColor: AppColors.bwPrimary.withValues(alpha: 0.1),
+        child: Icon(Icons.location_on, color: AppColors.bwPrimary, size: 20.sp),
       ),
       title: Text(
         site['site_name'] ?? 'Unknown Site',
@@ -816,24 +817,24 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
-                color: BWColors.primary.withOpacity(0.15),
+                color: AppColors.bwPrimary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4.r),
                 border: Border.all(
-                  color: BWColors.primary.withOpacity(0.3),
+                  color: AppColors.bwPrimary.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.location_city, size: 10.sp, color: BWColors.primary),
+                  Icon(Icons.location_city, size: 10.sp, color: AppColors.bwPrimary),
                   SizedBox(width: 3.w),
                   Text(
                     site['area'],
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w600,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                 ],
@@ -843,20 +844,20 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           // Street
           Row(
             children: [
-              Icon(Icons.route, size: 12.sp, color: BWColors.muted),
+              Icon(Icons.route, size: 12.sp, color: AppColors.bwMuted),
               SizedBox(width: 4.w),
               Text(
                 site['street'] ?? 'N/A',
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: BWColors.secondaryText,
+                  color: AppColors.bwSecondaryText,
                 ),
               ),
             ],
           ),
         ],
       ),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16.sp, color: BWColors.muted),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16.sp, color: AppColors.bwMuted),
       onTap: () {
         Navigator.push(
           context,
@@ -875,7 +876,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: Colors.green.withOpacity(0.1),
+        backgroundColor: Colors.green.withValues(alpha: 0.1),
         child: Icon(Icons.check_circle, color: Colors.green, size: 20.sp),
       ),
       title: Text(
@@ -894,24 +895,24 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
-                color: BWColors.primary.withOpacity(0.15),
+                color: AppColors.bwPrimary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4.r),
                 border: Border.all(
-                  color: BWColors.primary.withOpacity(0.3),
+                  color: AppColors.bwPrimary.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.location_city, size: 10.sp, color: BWColors.primary),
+                  Icon(Icons.location_city, size: 10.sp, color: AppColors.bwPrimary),
                   SizedBox(width: 3.w),
                   Text(
                     site['area'],
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w600,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                 ],
@@ -921,13 +922,13 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           // Street
           Row(
             children: [
-              Icon(Icons.route, size: 12.sp, color: BWColors.muted),
+              Icon(Icons.route, size: 12.sp, color: AppColors.bwMuted),
               SizedBox(width: 4.w),
               Text(
                 site['street'] ?? 'N/A',
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: BWColors.secondaryText,
+                  color: AppColors.bwSecondaryText,
                 ),
               ),
             ],
@@ -946,7 +947,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           ),
         ],
       ),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16.sp, color: BWColors.muted),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16.sp, color: AppColors.bwMuted),
       onTap: () {
         Navigator.push(
           context,
@@ -962,9 +963,9 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -999,14 +1000,14 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 18.sp, color: BWColors.primary),
+            Icon(icon, size: 18.sp, color: AppColors.bwPrimary),
             SizedBox(width: 8.w),
             Text(
               title,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
-                color: BWColors.primary,
+                color: AppColors.bwPrimary,
               ),
             ),
           ],
@@ -1016,10 +1017,10 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: enabled ? BWColors.surface : BWColors.surface.withOpacity(0.5),
+            color: enabled ? AppColors.bwSurface : AppColors.bwSurface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: enabled ? BWColors.primary.withOpacity(0.3) : BWColors.secondaryText.withOpacity(0.2),
+              color: enabled ? AppColors.bwPrimary.withValues(alpha: 0.3) : AppColors.bwSecondaryText.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -1033,7 +1034,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         height: 16.h,
                         child: const CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: BWColors.primary,
+                          color: AppColors.bwPrimary,
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -1041,7 +1042,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         'Loading...',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: BWColors.secondaryText,
+                          color: AppColors.bwSecondaryText,
                         ),
                       ),
                     ],
@@ -1054,17 +1055,17 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                       enabled ? hint : 'Select ${title.toLowerCase()} first',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: BWColors.secondaryText,
+                        color: AppColors.bwSecondaryText,
                       ),
                     ),
                     isExpanded: true,
                     icon: Icon(
                       Icons.keyboard_arrow_down,
-                      color: enabled ? BWColors.primary : BWColors.secondaryText,
+                      color: enabled ? AppColors.bwPrimary : AppColors.bwSecondaryText,
                     ),
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                     items: enabled
@@ -1089,14 +1090,14 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       children: [
         Row(
             children: [
-            Icon(Icons.business, size: 18.sp, color: BWColors.primary),
+            Icon(Icons.business, size: 18.sp, color: AppColors.bwPrimary),
             SizedBox(width: 8.w),
             Text(
               'Site',
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
-                color: BWColors.primary,
+                color: AppColors.bwPrimary,
               ),
             ),
           ],
@@ -1106,10 +1107,10 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: _selectedStreet != null ? BWColors.surface : BWColors.surface.withOpacity(0.5),
+            color: _selectedStreet != null ? AppColors.bwSurface : AppColors.bwSurface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: _selectedStreet != null ? BWColors.primary.withOpacity(0.3) : BWColors.secondaryText.withOpacity(0.2),
+              color: _selectedStreet != null ? AppColors.bwPrimary.withValues(alpha: 0.3) : AppColors.bwSecondaryText.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -1123,7 +1124,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         height: 16.h,
                         child: const CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: BWColors.primary,
+                          color: AppColors.bwPrimary,
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -1131,7 +1132,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         'Loading sites...',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: BWColors.secondaryText,
+                          color: AppColors.bwSecondaryText,
                         ),
                       ),
                     ],
@@ -1144,17 +1145,17 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                       _selectedStreet != null ? 'Select a site' : 'Select street first',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: BWColors.secondaryText,
+                        color: AppColors.bwSecondaryText,
                       ),
                     ),
                     isExpanded: true,
                     icon: Icon(
                       Icons.keyboard_arrow_down,
-                      color: _selectedStreet != null ? BWColors.primary : BWColors.secondaryText,
+                      color: _selectedStreet != null ? AppColors.bwPrimary : AppColors.bwSecondaryText,
                     ),
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                     items: _selectedStreet != null
@@ -1225,7 +1226,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: BWColors.primary,
+                  foregroundColor: AppColors.bwPrimary,
                   elevation: 0,
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
@@ -1300,10 +1301,10 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: BWColors.border),
+        border: Border.all(color: AppColors.bwBorder),
         boxShadow: [
           BoxShadow(
-            color: BWColors.primary.withOpacity(0.06),
+            color: AppColors.bwPrimary.withValues(alpha: 0.06),
             blurRadius: 10.r,
             offset: const Offset(0, 4),
           ),
@@ -1322,7 +1323,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         leading: Container(
           padding: EdgeInsets.all(10.r),
           decoration: BoxDecoration(
-            color: BWColors.primary,
+            color: AppColors.bwPrimary,
             borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(
@@ -1336,34 +1337,34 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           style: TextStyle(
             fontSize: 15.sp,
             fontWeight: FontWeight.w600,
-            color: BWColors.primary,
+            color: AppColors.bwPrimary,
           ),
         ),
         subtitle: Text(
           '${site['area'] ?? ''} • ${site['street'] ?? ''}',
           style: TextStyle(
             fontSize: 12.sp,
-            color: BWColors.secondaryText,
+            color: AppColors.bwSecondaryText,
           ),
         ),
-        trailing: const Icon(Icons.chevron_right, color: BWColors.secondaryText),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.bwSecondaryText),
       ),
     );
   }
 
   Widget _buildProfileScreen() {
     return Container(
-      color: BWColors.background,
+      color: AppColors.bwBackground,
       child: CustomScrollView(
         slivers: [
           // Simple Profile Header
           SliverAppBar(
             floating: true,
-            backgroundColor: BWColors.card,
+            backgroundColor: AppColors.bwCard,
             elevation: 0,
             title: const Text(
               'Profile',
-              style: TextStyle(color: BWColors.primary),
+              style: TextStyle(color: AppColors.bwPrimary),
             ),
           ),
           // Profile Info
@@ -1377,11 +1378,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     width: 80.w,
                     height: 80.h,
                     decoration: BoxDecoration(
-                      gradient: BWColors.bwGradient,
+                      gradient: AppColors.bwGradient,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: BWColors.primary.withOpacity(0.3),
+                          color: AppColors.bwPrimary.withValues(alpha: 0.3),
                           blurRadius: 10.r,
                           offset: const Offset(0, 4),
                         ),
@@ -1389,7 +1390,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     ),
                     child: Center(
                       child: Text(
-                        (_currentUser?['full_name'] ?? 'S').substring(0, 1).toUpperCase(),
+                        avatarInitial(_currentUser?['full_name'] as String?, 'S'),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 32.sp,
@@ -1404,7 +1405,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -1412,7 +1413,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     _currentUser?['role'] ?? 'Supervisor',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: BWColors.secondaryText,
+                      color: AppColors.bwSecondaryText,
                     ),
                   ),
                   SizedBox(height: 24.h),
@@ -1429,7 +1430,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -1444,7 +1445,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     icon: Icons.lock_outline,
                     title: 'Change Password',
                     subtitle: 'Update your password',
-                    onTap: () => _showChangePasswordDialog(),
+                    onTap: () => _showComingSoonDialog('Password change'),
                   ),
                   SizedBox(height: 12.h),
                   _buildProfileSettingsTile(
@@ -1467,7 +1468,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -1506,7 +1507,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: BWColors.primary,
+                        backgroundColor: AppColors.bwPrimary,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
@@ -1531,10 +1532,10 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: BWColors.border),
+        border: Border.all(color: AppColors.bwBorder),
         boxShadow: [
           BoxShadow(
-            color: BWColors.primary.withOpacity(0.06),
+            color: AppColors.bwPrimary.withValues(alpha: 0.06),
             blurRadius: 10.r,
             offset: const Offset(0, 4),
           ),
@@ -1542,7 +1543,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: BWColors.primary, size: 20.sp),
+          Icon(icon, color: AppColors.bwPrimary, size: 20.sp),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -1552,7 +1553,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   title,
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: BWColors.secondaryText,
+                    color: AppColors.bwSecondaryText,
                   ),
                 ),
                 SizedBox(height: 2.h),
@@ -1561,7 +1562,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: BWColors.primary,
+                    color: AppColors.bwPrimary,
                   ),
                 ),
               ],
@@ -1584,7 +1585,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: BWColors.primary.withOpacity(0.06),
+            color: AppColors.bwPrimary.withValues(alpha: 0.06),
             blurRadius: 10.r,
             offset: const Offset(0, 4),
           ),
@@ -1596,30 +1597,30 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         leading: Container(
           padding: EdgeInsets.all(10.r),
           decoration: BoxDecoration(
-            color: BWColors.primary.withOpacity(0.1),
+            color: AppColors.bwPrimary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10.r),
           ),
-          child: Icon(icon, color: BWColors.primary, size: 24.sp),
+          child: Icon(icon, color: AppColors.bwPrimary, size: 24.sp),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: BWColors.primary,
+            color: AppColors.bwPrimary,
           ),
         ),
         subtitle: Text(
           subtitle,
           style: TextStyle(
             fontSize: 13.sp,
-            color: BWColors.secondaryText,
+            color: AppColors.bwSecondaryText,
           ),
         ),
         trailing: onTap != null
             ? const Icon(
                 Icons.chevron_right,
-                color: BWColors.secondaryText,
+                color: AppColors.bwSecondaryText,
               )
             : null,
       ),
@@ -1638,7 +1639,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         builder: (ctx, setDialogState) => AlertDialog(
           title: const Text(
             'Edit Profile',
-            style: TextStyle(color: BWColors.primary, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.bwPrimary, fontWeight: FontWeight.bold),
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           content: Form(
@@ -1650,11 +1651,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   controller: nameCtrl,
                   decoration: InputDecoration(
                     labelText: 'Full Name',
-                    prefixIcon: const Icon(Icons.person_outline, color: BWColors.primary),
+                    prefixIcon: const Icon(Icons.person_outline, color: AppColors.bwPrimary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: BWColors.primary, width: 2),
+                      borderSide: const BorderSide(color: AppColors.bwPrimary, width: 2),
                     ),
                   ),
                   validator: (v) =>
@@ -1668,11 +1669,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     labelText: 'Phone Number',
-                    prefixIcon: const Icon(Icons.phone_outlined, color: BWColors.primary),
+                    prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.bwPrimary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: BWColors.primary, width: 2),
+                      borderSide: const BorderSide(color: AppColors.bwPrimary, width: 2),
                     ),
                     counterText: '',
                   ),
@@ -1688,11 +1689,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           actions: [
             TextButton(
               onPressed: isSaving ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: BWColors.secondaryText)),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.bwSecondaryText)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: BWColors.primary,
+                backgroundColor: AppColors.bwPrimary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
               ),
@@ -1746,64 +1747,6 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
     phoneCtrl.dispose();
   }
 
-  void _showChangePasswordDialog() {
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Password'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Current Password',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            const TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            const TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Confirm New Password',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password change feature coming soon!'),
-                ),
-              );
-            },
-            child: const Text('Change'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showComingSoonDialog(String feature) {
     showDialog(
       context: context,
@@ -1826,7 +1769,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: BWColors.primary.withOpacity(0.1),
+            color: AppColors.bwPrimary.withValues(alpha: 0.1),
             blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
@@ -1859,11 +1802,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         duration: const Duration(milliseconds: 300),
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
         decoration: BoxDecoration(
-          color: isSelected ? BWColors.primary : Colors.transparent,
+          color: isSelected ? AppColors.bwPrimary : Colors.transparent,
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: BWColors.primary.withOpacity(0.3),
+              color: AppColors.bwPrimary.withValues(alpha: 0.3),
               blurRadius: 10.r,
               offset: const Offset(0, 4),
             )
@@ -1874,7 +1817,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : BWColors.secondaryText,
+              color: isSelected ? Colors.white : AppColors.bwSecondaryText,
               size: 22.sp,
             ),
             if (isSelected) ...[
@@ -1942,22 +1885,22 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           leading: Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: BWColors.primary.withOpacity(0.15),
+              color: AppColors.bwPrimary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Icon(Icons.location_city, color: BWColors.primary, size: 20.sp),
+            child: Icon(Icons.location_city, color: AppColors.bwPrimary, size: 20.sp),
           ),
           title: Text(
             area,
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.bold,
-              color: BWColors.primary,
+              color: AppColors.bwPrimary,
             ),
           ),
           subtitle: Text(
             '$totalSitesInArea ${totalSitesInArea == 1 ? 'site' : 'sites'} · ${streets.length} ${streets.length == 1 ? 'street' : 'streets'}',
-            style: TextStyle(fontSize: 12.sp, color: BWColors.secondaryText),
+            style: TextStyle(fontSize: 12.sp, color: AppColors.bwSecondaryText),
           ),
           children: streets.entries.map((streetEntry) {
             final street = streetEntry.key;
@@ -1965,18 +1908,18 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
 
             return ExpansionTile(
               tilePadding: EdgeInsets.only(left: 32.w, right: 16.w),
-              leading: Icon(Icons.route, color: BWColors.muted, size: 18.sp),
+              leading: Icon(Icons.route, color: AppColors.bwMuted, size: 18.sp),
               title: Text(
                 street,
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: BWColors.primary,
+                  color: AppColors.bwPrimary,
                 ),
               ),
               subtitle: Text(
                 '${sites.length} ${sites.length == 1 ? 'site' : 'sites'}',
-                style: TextStyle(fontSize: 12.sp, color: BWColors.secondaryText),
+                style: TextStyle(fontSize: 12.sp, color: AppColors.bwSecondaryText),
               ),
               children: sites.map((site) {
                 final siteForDetail = {
@@ -1992,28 +1935,28 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   leading: Container(
                     padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(
-                      color: BWColors.primary.withOpacity(0.1),
+                      color: AppColors.bwPrimary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Icon(Icons.construction, color: BWColors.primary, size: 18.sp),
+                    child: Icon(Icons.construction, color: AppColors.bwPrimary, size: 18.sp),
                   ),
                   title: Text(
                     site['display_name'] ?? site['site_name'] ?? 'Unknown Site',
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: BWColors.primary,
+                      color: AppColors.bwPrimary,
                     ),
                   ),
                   subtitle: site['description'] != null && site['description'].toString().trim().isNotEmpty
                       ? Text(
                           site['description'],
-                          style: TextStyle(fontSize: 12.sp, color: BWColors.secondaryText),
+                          style: TextStyle(fontSize: 12.sp, color: AppColors.bwSecondaryText),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         )
                       : null,
-                  trailing: Icon(Icons.arrow_forward_ios, size: 14.sp, color: BWColors.muted),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 14.sp, color: AppColors.bwMuted),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -2045,7 +1988,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
             child: Container(
               padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
-                color: BWColors.primary.withOpacity(0.1),
+                color: AppColors.bwPrimary.withValues(alpha: 0.1),
                 borderRadius: _workingSitesExpanded
                     ? BorderRadius.vertical(top: Radius.circular(12.r))
                     : BorderRadius.circular(12.r),
@@ -2055,10 +1998,10 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   Container(
                     padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(
-                      color: BWColors.primary.withOpacity(0.2),
+                      color: AppColors.bwPrimary.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Icon(Icons.work, color: BWColors.primary, size: 20.sp),
+                    child: Icon(Icons.work, color: AppColors.bwPrimary, size: 20.sp),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
@@ -2067,7 +2010,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: BWColors.primary,
+                        color: AppColors.bwPrimary,
                       ),
                     ),
                   ),
@@ -2075,7 +2018,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: BWColors.primary,
+                        color: AppColors.bwPrimary,
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Text(
@@ -2090,7 +2033,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   SizedBox(width: 8.w),
                   Icon(
                     _workingSitesExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: BWColors.primary,
+                    color: AppColors.bwPrimary,
                   ),
                 ],
               ),
@@ -2107,11 +2050,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                 padding: EdgeInsets.all(24.r),
                 child: Column(
                   children: [
-                    Icon(Icons.work_off, size: 48.sp, color: BWColors.secondaryText),
+                    Icon(Icons.work_off, size: 48.sp, color: AppColors.bwSecondaryText),
                     SizedBox(height: 8.h),
                     Text(
                       'No working sites assigned yet',
-                      style: TextStyle(color: BWColors.secondaryText, fontSize: 14.sp),
+                      style: TextStyle(color: AppColors.bwSecondaryText, fontSize: 14.sp),
                     ),
                   ],
                 ),

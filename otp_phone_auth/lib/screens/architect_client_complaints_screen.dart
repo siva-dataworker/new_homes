@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../services/construction_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_logger.dart';
 
 class ArchitectClientComplaintsScreen extends StatefulWidget {
   final String siteId;
@@ -44,9 +45,9 @@ class _ArchitectClientComplaintsScreenState extends State<ArchitectClientComplai
         });
       }
 
-      print('✅ [ARCHITECT] Loaded ${_complaints.length} complaints for site ${widget.siteId}');
+      AppLogger.d('✅ [ARCHITECT] Loaded ${_complaints.length} complaints for site ${widget.siteId}');
     } catch (e) {
-      print('❌ [ARCHITECT] Error loading complaints: $e');
+      AppLogger.d('❌ [ARCHITECT] Error loading complaints: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -169,7 +170,7 @@ class _ArchitectClientComplaintsScreenState extends State<ArchitectClientComplai
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10.r,
               offset: const Offset(0, 2),
             ),
@@ -182,7 +183,7 @@ class _ArchitectClientComplaintsScreenState extends State<ArchitectClientComplai
             Container(
               padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
-                color: AppColors.deepNavy.withOpacity(0.05),
+                color: AppColors.deepNavy.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
               ),
               child: Row(
@@ -254,7 +255,7 @@ class _ArchitectClientComplaintsScreenState extends State<ArchitectClientComplai
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
-                          color: _getStatusColor(status).withOpacity(0.1),
+                          color: _getStatusColor(status).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(

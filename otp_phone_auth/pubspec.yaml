@@ -41,6 +41,7 @@ dependencies:
   
   # Storage & State
   shared_preferences: ^2.3.3
+  flutter_secure_storage: ^9.2.2
   provider: ^6.1.2
   
   # Image & File
@@ -57,7 +58,6 @@ dependencies:
   uuid: ^4.5.1
   
   # Database
-  sqflite: ^2.4.1
   path: ^1.9.0
   crypto: ^3.0.6
   http: ^1.2.0

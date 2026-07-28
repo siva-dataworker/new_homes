@@ -120,7 +120,7 @@ class _SiteEngineerMaterialScreenState extends State<SiteEngineerMaterialScreen>
             Text('Material Inventory', style: TextStyle(fontSize: 18.sp)),
             Text(
               widget.siteName,
-              style: TextStyle(fontSize: 12.sp, color: AppColors.white.withOpacity(0.8)),
+              style: TextStyle(fontSize: 12.sp, color: AppColors.white.withValues(alpha: 0.8)),
             ),
           ],
         ),
@@ -219,7 +219,7 @@ class _SiteEngineerMaterialScreenState extends State<SiteEngineerMaterialScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(status).withOpacity(0.1),
+                    color: _getStatusColor(status).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(color: _getStatusColor(status)),
                   ),
@@ -314,9 +314,9 @@ class _SiteEngineerMaterialScreenState extends State<SiteEngineerMaterialScreen>
               Container(
                 padding: EdgeInsets.all(12.r),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.05),
+                  color: AppColors.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -1180,7 +1180,7 @@ class _MaterialUsageHistoryScreenState extends State<_MaterialUsageHistoryScreen
             Text('Usage History', style: TextStyle(fontSize: 18.sp)),
             Text(
               widget.materialType,
-              style: TextStyle(fontSize: 12.sp, color: AppColors.white.withOpacity(0.8)),
+              style: TextStyle(fontSize: 12.sp, color: AppColors.white.withValues(alpha: 0.8)),
             ),
           ],
         ),

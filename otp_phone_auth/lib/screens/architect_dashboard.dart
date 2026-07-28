@@ -16,6 +16,9 @@ import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'architect_client_complaints_screen.dart';
 import 'edit_profile_screen.dart';
+import '../services/api_client.dart';
+import '../utils/string_utils.dart';
+import '../utils/app_logger.dart';
 
 class ArchitectDashboard extends StatefulWidget {
   final UserModel user;
@@ -74,7 +77,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
         });
       }
     } catch (e) {
-      print('Error loading areas: $e');
+      AppLogger.d('Error loading areas: $e');
     } finally {
       setState(() => _isLoadingAreas = false);
     }
@@ -107,7 +110,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
         });
       }
     } catch (e) {
-      print('Error loading streets: $e');
+      AppLogger.d('Error loading streets: $e');
     } finally {
       setState(() => _isLoadingStreets = false);
     }
@@ -138,7 +141,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
         });
       }
     } catch (e) {
-      print('Error loading sites: $e');
+      AppLogger.d('Error loading sites: $e');
     } finally {
       setState(() => _isLoadingSites = false);
     }
@@ -255,15 +258,15 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.purple.shade600,
-                          Colors.purple.shade400,
+                          AppColors.deepNavy,
+                          AppColors.deepNavyLight,
                         ],
                       ),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
-                        (_user.name ?? 'A').substring(0, 1).toUpperCase(),
+                        avatarInitial(_user.name, 'A'),
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -376,15 +379,15 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
             Container(
               padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
-                color: Colors.purple.shade50,
+                color: AppColors.lightSlate,
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: Colors.purple.shade200, width: 1),
+                border: Border.all(color: AppColors.textHint, width: 1),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: Colors.purple.shade600,
+                    color: AppColors.deepNavy,
                     size: 20.sp,
                   ),
                   SizedBox(width: 12.w),
@@ -393,7 +396,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                       'Select all three dropdowns to access architect tools for the site.',
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: Colors.purple.shade700,
+                        color: AppColors.deepNavyDark,
                         height: 1.4,
                       ),
                     ),
@@ -461,8 +464,8 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.purple.shade600,
-                          Colors.purple.shade400,
+                          AppColors.deepNavy,
+                          AppColors.deepNavyLight,
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12.r),
@@ -532,14 +535,14 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 18.sp, color: Colors.purple.shade600),
+            Icon(icon, size: 18.sp, color: AppColors.deepNavy),
             SizedBox(width: 8.w),
             Text(
               title,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.purple.shade600,
+                color: AppColors.deepNavy,
               ),
             ),
           ],
@@ -555,7 +558,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: enabled
-                  ? Colors.purple.shade300
+                  ? AppColors.deepNavyLight
                   : AppColors.textSecondary.withValues(alpha: 0.2),
               width: 1,
             ),
@@ -570,7 +573,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                         height: 16.h,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.purple.shade600,
+                          color: AppColors.deepNavy,
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -598,12 +601,12 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                     icon: Icon(
                       Icons.keyboard_arrow_down,
                       color: enabled
-                          ? Colors.purple.shade600
+                          ? AppColors.deepNavy
                           : AppColors.textSecondary,
                     ),
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.purple.shade700,
+                      color: AppColors.deepNavyDark,
                       fontWeight: FontWeight.w600,
                     ),
                     items: enabled
@@ -628,14 +631,14 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
       children: [
         Row(
           children: [
-            Icon(Icons.business, size: 18.sp, color: Colors.purple.shade600),
+            Icon(Icons.business, size: 18.sp, color: AppColors.deepNavy),
             SizedBox(width: 8.w),
             Text(
               'Site',
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.purple.shade600,
+                color: AppColors.deepNavy,
               ),
             ),
           ],
@@ -651,7 +654,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: _selectedStreet != null
-                  ? Colors.purple.shade300
+                  ? AppColors.deepNavyLight
                   : AppColors.textSecondary.withValues(alpha: 0.2),
               width: 1,
             ),
@@ -666,7 +669,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                         height: 16.h,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.purple.shade600,
+                          color: AppColors.deepNavy,
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -696,12 +699,12 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
                     icon: Icon(
                       Icons.keyboard_arrow_down,
                       color: _selectedStreet != null
-                          ? Colors.purple.shade600
+                          ? AppColors.deepNavy
                           : AppColors.textSecondary,
                     ),
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.purple.shade700,
+                      color: AppColors.deepNavyDark,
                       fontWeight: FontWeight.w600,
                     ),
                     items: _selectedStreet != null
@@ -849,7 +852,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
       MaterialPageRoute(
         builder: (context) => EditProfileScreen(
           user: _user,
-          accentColor: Colors.purple.shade600,
+          accentColor: AppColors.deepNavy,
           roleLabel: 'Architect',
         ),
       ),
@@ -874,7 +877,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
               height: 100.h,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.purple.shade600, Colors.purple.shade400],
+                  colors: [AppColors.deepNavy, AppColors.deepNavyLight],
                 ),
                 shape: BoxShape.circle,
               ),
@@ -899,7 +902,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.purple.shade600, Colors.purple.shade400],
+                  colors: [AppColors.deepNavy, AppColors.deepNavyLight],
                 ),
                 borderRadius: BorderRadius.circular(20.r),
               ),
@@ -962,7 +965,7 @@ class _ArchitectDashboardState extends State<ArchitectDashboard> {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
@@ -1135,7 +1138,7 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 12.w),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.purple.shade300),
+                border: Border.all(color: AppColors.deepNavyLight),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: DropdownButtonHideUnderline(
@@ -1171,14 +1174,14 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: _selectedFile != null
-                        ? Colors.purple.shade600
-                        : Colors.purple.shade300,
+                        ? AppColors.deepNavy
+                        : AppColors.deepNavyLight,
                     width: 2,
                     style: BorderStyle.solid,
                   ),
                   borderRadius: BorderRadius.circular(8.r),
                   color: _selectedFile != null
-                      ? Colors.purple.shade50
+                      ? AppColors.lightSlate
                       : Colors.grey.shade50,
                 ),
                 child: Row(
@@ -1188,7 +1191,7 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
                           ? Icons.check_circle
                           : Icons.upload_file,
                       color: _selectedFile != null
-                          ? Colors.purple.shade600
+                          ? AppColors.deepNavy
                           : Colors.grey.shade600,
                     ),
                     SizedBox(width: 12.w),
@@ -1204,7 +1207,7 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
                               color: _selectedFile != null
-                                  ? Colors.purple.shade700
+                                  ? AppColors.deepNavyDark
                                   : Colors.grey.shade600,
                             ),
                           ),
@@ -1252,11 +1255,11 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
                 hintText: 'Enter document title',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.purple.shade300),
+                  borderSide: BorderSide(color: AppColors.deepNavyLight),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.purple.shade600),
+                  borderSide: BorderSide(color: AppColors.deepNavy),
                 ),
               ),
             ),
@@ -1279,11 +1282,11 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
                 hintText: 'Enter description',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.purple.shade300),
+                  borderSide: BorderSide(color: AppColors.deepNavyLight),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.purple.shade600),
+                  borderSide: BorderSide(color: AppColors.deepNavy),
                 ),
               ),
             ),
@@ -1301,7 +1304,7 @@ class _DocumentUploadDialogState extends State<_DocumentUploadDialog> {
                 ElevatedButton(
                   onPressed: _isUploading ? null : _uploadDocument,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple.shade600,
+                    backgroundColor: AppColors.deepNavy,
                     foregroundColor: Colors.white,
                   ),
                   child: _isUploading
@@ -1573,7 +1576,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
     });
     try {
       final token = await _authService.getToken();
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse(
           '${AuthService.baseUrl}/construction/architect-documents/?site_id=${widget.siteId}',
         ),
@@ -1628,7 +1631,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.purple))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.deepNavy))
           : _error != null
           ? Center(
               child: Column(
@@ -1644,7 +1647,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
                   ElevatedButton(
                     onPressed: _loadHistory,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                      backgroundColor: AppColors.deepNavy,
                       foregroundColor: Colors.white,
                     ),
                     child: const Text('Retry'),
@@ -1680,7 +1683,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
             )
           : RefreshIndicator(
               onRefresh: _loadHistory,
-              color: Colors.purple,
+              color: AppColors.deepNavy,
               child: ListView.separated(
                 padding: EdgeInsets.all(16.r),
                 itemCount: _documents.length,
@@ -1702,7 +1705,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
                       borderRadius: BorderRadius.circular(12.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withValues(alpha: 0.08),
+                          color: AppColors.deepNavy.withValues(alpha: 0.08),
                           blurRadius: 8.r,
                           offset: const Offset(0, 2),
                         ),
@@ -1715,12 +1718,12 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
                           Container(
                             padding: EdgeInsets.all(10.r),
                             decoration: BoxDecoration(
-                              color: Colors.purple.withValues(alpha: 0.1),
+                              color: AppColors.deepNavy.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10.r),
                             ),
                             child: Icon(
                               Icons.insert_drive_file,
-                              color: Colors.purple,
+                              color: AppColors.deepNavy,
                               size: 24.sp,
                             ),
                           ),
@@ -1745,7 +1748,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
                                       vertical: 2.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.purple.withValues(
+                                      color: AppColors.deepNavy.withValues(
                                         alpha: 0.1,
                                       ),
                                       borderRadius: BorderRadius.circular(6.r),
@@ -1754,7 +1757,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
                                       docType,
                                       style: TextStyle(
                                         fontSize: 11.sp,
-                                        color: Colors.purple,
+                                        color: AppColors.deepNavy,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -1797,7 +1800,7 @@ class _ArchitectHistoryScreenState extends State<ArchitectHistoryScreen> {
                             IconButton(
                               icon: Icon(
                                 Icons.open_in_new,
-                                color: Colors.purple,
+                                color: AppColors.deepNavy,
                                 size: 22.sp,
                               ),
                               onPressed: () => _openDocument(fileUrl),

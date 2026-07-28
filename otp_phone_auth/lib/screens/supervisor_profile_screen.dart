@@ -19,61 +19,21 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
-  late TextEditingController _passwordController;
-  late TextEditingController _confirmPasswordController;
   final AuthService _authService = AuthService();
   bool _isLoading = false;
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.user.name);
     _phoneController = TextEditingController(text: widget.user.phoneNumber);
-    _passwordController = TextEditingController();
-    _confirmPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
-  }
-  
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return null; // Password is optional
-    }
-    
-    if (value.length < 8) {
-      return 'Password must be at least 8 characters';
-    }
-    
-    // Check for uppercase letter
-    if (!value.contains(RegExp(r'[A-Z]'))) {
-      return 'Password must contain at least 1 uppercase letter';
-    }
-    
-    // Check for lowercase letter
-    if (!value.contains(RegExp(r'[a-z]'))) {
-      return 'Password must contain at least 1 lowercase letter';
-    }
-    
-    // Check for number
-    if (!value.contains(RegExp(r'[0-9]'))) {
-      return 'Password must contain at least 1 number';
-    }
-    
-    // Check for special character
-    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
-      return 'Password must contain at least 1 special character';
-    }
-    
-    return null;
   }
 
   Future<void> _saveProfile() async {
@@ -307,144 +267,36 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                 
                 SizedBox(height: 24.h),
 
-                // Password Section Header
-                Text(
-                  'Set Password (Optional)',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  'Create a strong password for additional security',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-
-                SizedBox(height: 16.h),
-
-                // Password Field
+                // Password changes aren't available yet — the backend has no
+                // change-password endpoint. Previously this form validated
+                // and "saved" a password that was silently discarded, which
+                // told users their password had changed when it hadn't.
                 Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.deepNavy.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'New Password',
-                      hintText: 'Enter password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.r)),
-                      ),
-                    ),
-                    validator: _validatePassword,
-                  ),
-                ),
-
-                SizedBox(height: 16.h),
-
-                // Confirm Password Field
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.deepNavy.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: TextFormField(
-                    controller: _confirmPasswordController,
-                    obscureText: _obscureConfirmPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      hintText: 'Re-enter password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12.r)),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (_passwordController.text.isNotEmpty) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
-                        }
-                        if (value != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                
-                SizedBox(height: 12.h),
-
-                // Password Requirements
-                Container(
-                  padding: EdgeInsets.all(12.r),
+                  padding: EdgeInsets.all(16.r),
                   decoration: BoxDecoration(
                     color: AppColors.deepNavy.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AppColors.borderColor),
                   ),
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Password must contain:',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
+                      Icon(Icons.info_outline, color: AppColors.textSecondary, size: 20.sp),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          'Password changes aren\'t supported yet. Contact your '
+                          'administrator if you need your password reset.',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 6.h),
-                      _buildRequirement('At least 8 characters'),
-                      _buildRequirement('1 uppercase letter (A-Z)'),
-                      _buildRequirement('1 lowercase letter (a-z)'),
-                      _buildRequirement('1 number (0-9)'),
-                      _buildRequirement('1 special character (!@#\$%^&*)'),
                     ],
                   ),
                 ),
-                
+
                 SizedBox(height: 32.h),
 
                 // Save Button
@@ -533,29 +385,6 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-  
-  Widget _buildRequirement(String text) {
-    return Padding(
-      padding: EdgeInsets.only(top: 4.h),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 14.sp,
-            color: Colors.grey.shade600,
-          ),
-          SizedBox(width: 6.w),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 11.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
       ),
     );
   }

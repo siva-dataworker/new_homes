@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
+import '../services/api_client.dart';
 
 class SiteEngineerExtraCostScreen extends StatefulWidget {
   final Map<String, dynamic> site;
@@ -44,7 +45,7 @@ class _SiteEngineerExtraCostScreenState extends State<SiteEngineerExtraCostScree
     try {
       final token = await _authService.getToken();
 
-      final response = await http.get(
+      final response = await ApiClient.get(
         Uri.parse('${AuthService.baseUrl}/construction/extra-costs/${widget.site['id']}/'),
         headers: {'Authorization': 'Bearer $token'},
       );
@@ -91,7 +92,7 @@ class _SiteEngineerExtraCostScreenState extends State<SiteEngineerExtraCostScree
 
     try {
       final token = await _authService.getToken();
-      final response = await http.post(
+      final response = await ApiClient.post(
         Uri.parse('${AuthService.baseUrl}/construction/submit-extra-cost/'),
         headers: {
           'Authorization': 'Bearer $token',

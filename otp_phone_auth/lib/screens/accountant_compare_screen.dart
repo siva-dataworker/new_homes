@@ -6,6 +6,7 @@ import '../services/construction_service.dart';
 import '../providers/accountant_entries_provider.dart';
 import '../utils/app_colors.dart';
 import 'accountant_approved_entries_screen.dart';
+import '../utils/app_logger.dart';
 
 class AccountantCompareScreen extends StatefulWidget {
   const AccountantCompareScreen({super.key});
@@ -35,19 +36,19 @@ class _AccountantCompareScreenState extends State<AccountantCompareScreen> {
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(provider.selectedDate);
 
-      print('🔍 [COMPARE] Loading data for date: $dateStr');
+      AppLogger.d('🔍 [COMPARE] Loading data for date: $dateStr');
 
       // Load supervisor entries
       final supervisorData = await _constructionService.getEntriesByDateAndRole(dateStr, 'Supervisor');
-      print('📊 [COMPARE] Supervisor entries: ${supervisorData.length}');
+      AppLogger.d('📊 [COMPARE] Supervisor entries: ${supervisorData.length}');
 
       // Load site engineer entries
       final engineerData = await _constructionService.getEntriesByDateAndRole(dateStr, 'Site Engineer');
-      print('📊 [COMPARE] Engineer entries: ${engineerData.length}');
+      AppLogger.d('📊 [COMPARE] Engineer entries: ${engineerData.length}');
 
       // Load accountant (custom) entries
       final accountantData = await _constructionService.getEntriesByDateAndRole(dateStr, 'Accountant');
-      print('📊 [COMPARE] Accountant entries: ${accountantData.length}');
+      AppLogger.d('📊 [COMPARE] Accountant entries: ${accountantData.length}');
 
       if (mounted) {
         provider.setSupervisorEntries(supervisorData);
@@ -56,7 +57,7 @@ class _AccountantCompareScreenState extends State<AccountantCompareScreen> {
         provider.setIsLoading(false);
       }
     } catch (e) {
-      print('❌ [COMPARE] Error: $e');
+      AppLogger.d('❌ [COMPARE] Error: $e');
       if (mounted) {
         provider.setError(e.toString());
         provider.setIsLoading(false);
@@ -920,7 +921,7 @@ Future<void> _selectDate() async {
       final labourEntries = entry['labour_entries'] as List;
       final dateStr = DateFormat('yyyy-MM-dd').format(provider.selectedDate);
 
-      print('✅ [CONFIRM] Starting confirmation - siteId: $siteId, entryType: $entryType, date: $dateStr');
+      AppLogger.d('✅ [CONFIRM] Starting confirmation - siteId: $siteId, entryType: $entryType, date: $dateStr');
 
       // Fetch labour rates for each labour type
       final labourEntriesWithRates = <Map<String, dynamic>>[];
@@ -944,7 +945,7 @@ Future<void> _selectDate() async {
         });
       }
 
-      print('✅ [CONFIRM] Prepared ${labourEntriesWithRates.length} labour entries with rates');
+      AppLogger.d('✅ [CONFIRM] Prepared ${labourEntriesWithRates.length} labour entries with rates');
 
       // Confirm the entry
       final result = await _constructionService.confirmCashEntry(
@@ -955,11 +956,11 @@ Future<void> _selectDate() async {
         labourEntries: labourEntriesWithRates,
       );
 
-      print('✅ [CONFIRM] API Response: $result');
+      AppLogger.d('✅ [CONFIRM] API Response: $result');
 
       if (mounted) {
         if (result['success'] == true) {
-          print('✅ [CONFIRM] Confirmation succeeded!');
+          AppLogger.d('✅ [CONFIRM] Confirmation succeeded!');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Entry confirmed! Moving to Approved Entries...'),
@@ -968,14 +969,14 @@ Future<void> _selectDate() async {
           );
 
           // Refresh compare screen data
-          print('✅ [CONFIRM] Refreshing comparison data...');
+          AppLogger.d('✅ [CONFIRM] Refreshing comparison data...');
           await Future.delayed(const Duration(milliseconds: 300));
           if (mounted) {
             _loadComparisonData();
           }
 
           // Navigate to Approved Entries after a delay
-          print('✅ [CONFIRM] Navigating to Approved Entries screen...');
+          AppLogger.d('✅ [CONFIRM] Navigating to Approved Entries screen...');
           await Future.delayed(const Duration(milliseconds: 600));
           if (mounted) {
             Navigator.push(
@@ -988,7 +989,7 @@ Future<void> _selectDate() async {
             );
           }
         } else {
-          print('❌ [CONFIRM] Confirmation failed: ${result['error']}');
+          AppLogger.d('❌ [CONFIRM] Confirmation failed: ${result['error']}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['error'] ?? 'Failed to confirm entry'),
@@ -998,7 +999,7 @@ Future<void> _selectDate() async {
         }
       }
     } catch (e) {
-      print('❌ [CONFIRM] Exception: $e');
+      AppLogger.d('❌ [CONFIRM] Exception: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

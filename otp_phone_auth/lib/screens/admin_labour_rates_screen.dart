@@ -783,7 +783,7 @@ class _AdminLabourRatesScreenState extends State<AdminLabourRatesScreen> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 onTap: () {
-                  _addNewLabourType;
+                  _addNewLabourType();
                 },
               ),
             ),
