@@ -280,53 +280,7 @@ def get_client_site_details(request):
             'sites':   site_details,
             'count':   len(site_details),
         })
-                        'title': d['title'],
-                        'description': d.get('description') or '',
-                        'file_url': d['file_url'] if d['file_url'].startswith(('http', '/media/', '/')) else f"{settings.MEDIA_URL}{d['file_url']}",
-                        'file_name': d['file_name'],
-                        'file_size': d.get('file_size'),
-                        'upload_date': d['upload_date'].strftime('%Y-%m-%d') if d.get('upload_date') else None,
-                        'architect_name': d.get('architect_name') or 'Unknown',
-                    }
-                    for d in architect_docs
-                ],
-                
-                # Site engineer documents (project files)
-                'engineer_documents': [
-                    {
-                        'id': str(d['id']),
-                        'document_type': d['document_type'],
-                        'title': d['title'],
-                        'description': d.get('description') or '',
-                        'file_url': d['file_url'] if d['file_url'].startswith(('http', '/media/', '/')) else f"{settings.MEDIA_URL}{d['file_url']}",
-                        'file_name': d['file_name'],
-                        'file_size': d.get('file_size'),
-                        'upload_date': d['upload_date'].strftime('%Y-%m-%d') if d.get('upload_date') else None,
-                        'engineer_name': d.get('engineer_name') or 'Unknown',
-                    }
-                    for d in engineer_docs
-                ],
-                
-                # Extra costs
-                'extra_requirements': {
-                    'total_amount': total_extra_cost,
-                    'entries': [
-                        {
-                            'amount': float(ec['extra_cost'] or 0),
-                            'notes': ec.get('extra_cost_notes') or '',
-                            'date': ec['entry_date'].strftime('%Y-%m-%d') if ec.get('entry_date') else None,
-                        }
-                        for ec in extra_costs
-                    ]
-                },
-            })
-        
-        return Response({
-            'success': True,
-            'sites': site_details,
-            'count': len(site_details),
-        })
-        
+
     except Exception as e:
         logger.error("Error fetching client site details: %s", e)
         return Response({
