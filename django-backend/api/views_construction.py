@@ -4953,8 +4953,8 @@ def get_today_sites_with_data(request):
                 TRUE as has_photos
             FROM work_updates wu
             JOIN sites s ON wu.site_id = s.id
-            WHERE wu.engineer_id = %s 
-            AND DATE(wu.upload_date) = %s
+            WHERE wu.engineer_id = %s
+            AND wu.update_date = %s
         """, (user_id, today))
         
         # Merge all sites
