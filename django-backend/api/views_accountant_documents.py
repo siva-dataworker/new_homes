@@ -82,7 +82,7 @@ def upload_material_bill(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = f"{settings.MEDIA_URL}{saved_path}"
+        file_url = default_storage.url(saved_path)
         
         # Get current date and day of week
         today = datetime.now().date()
@@ -268,7 +268,7 @@ def upload_vendor_bill(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = f"{settings.MEDIA_URL}{saved_path}"
+        file_url = default_storage.url(saved_path)
         
         # Get current date and day of week
         today = datetime.now().date()
@@ -428,7 +428,7 @@ def upload_site_agreement(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = f"{settings.MEDIA_URL}{saved_path}"
+        file_url = default_storage.url(saved_path)
         
         # Get current date and day of week
         today = datetime.now().date()
