@@ -235,8 +235,9 @@ def paginate_query(query, params=None, limit=20, offset=0):
     count_query = f"SELECT COUNT(*) FROM ({query}) as subquery"
     try:
         total = fetch_one(count_query, params)
-        total_count = total[0] if total else 0
-    except:
+        total_count = total['count'] if total else 0
+    except Exception as e:
+        logger.error("paginate_query count failed: %s", e)
         total_count = 0
     
     # Add pagination to original query

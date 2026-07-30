@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .authentication import JWTAuthentication
-from .database import fetch_all, fetch_one, execute_query
+from .database import fetch_all, fetch_one, execute_query, paginate_query, get_pagination_info
 from datetime import datetime
 import uuid
 import os
@@ -82,7 +82,7 @@ def upload_material_bill(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = default_storage.url(saved_path)
+        file_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Get current date and day of week
         today = datetime.now().date()
@@ -268,7 +268,7 @@ def upload_vendor_bill(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = default_storage.url(saved_path)
+        file_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Get current date and day of week
         today = datetime.now().date()
@@ -428,7 +428,7 @@ def upload_site_agreement(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = default_storage.url(saved_path)
+        file_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Get current date and day of week
         today = datetime.now().date()
