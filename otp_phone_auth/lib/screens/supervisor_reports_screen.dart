@@ -68,9 +68,13 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
     final descriptionController = TextEditingController();
     final amountController = TextEditingController();
 
+    bool isSubmitting = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
         title: Text(
           'Client Extra Requirement',
           style: TextStyle(
@@ -146,12 +150,14 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: isSubmitting ? null : () => Navigator.pop(context),
             child: const Text('Cancel',
                 style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: isSubmitting
+                ? null
+                : () async {
               final description = descriptionController.text.trim();
               final amountText = amountController.text.trim();
 
@@ -170,6 +176,15 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
                 );
                 return;
               }
+
+              // Dismiss the keyboard first — without this, the first tap
+              // on Submit while a TextField still has focus can get
+              // absorbed as a focus-loss/keyboard-dismiss gesture instead
+              // of reaching the button, requiring a second tap to actually
+              // register (the "have to click twice" symptom).
+              FocusScope.of(context).unfocus();
+
+              setDialogState(() => isSubmitting = true);
 
               final success = await provider.addClientRequirement(
                   siteId, description, amount);
@@ -190,10 +205,22 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.supervisorAccent,
               foregroundColor: Colors.white,
+              disabledBackgroundColor:
+                  AppColors.supervisorAccent.withValues(alpha: 0.5),
             ),
-            child: const Text('Submit'),
+            child: isSubmitting
+                ? SizedBox(
+                    width: 18.w,
+                    height: 18.h,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Submit'),
           ),
         ],
+        ),
       ),
     );
   }
@@ -206,17 +233,17 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
         title: Text(
           'Reports',
           style: TextStyle(
-            color: AppColors.supervisorAccent,
+            color: Colors.white,
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.cleanWhite,
+        backgroundColor: AppColors.supervisorAccent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.supervisorAccent),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.supervisorAccent),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadWorkingSites,
           ),
         ],
