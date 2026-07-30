@@ -28,6 +28,7 @@ import 'providers/accountant_entries_provider.dart';
 import 'providers/architect_provider.dart';
 import 'providers/client_provider.dart';
 import 'services/api_client.dart';
+import 'services/auth_service.dart';
 
 /// Root navigator key so app-level services (the 401 handler below) can
 /// redirect to the login screen without needing a BuildContext of their own.
@@ -140,6 +141,12 @@ class _AuthCheckerState extends State<AuthChecker> {
   void _registerUnauthorizedHandler() {
     if (_unauthorizedHandlerRegistered) return;
     _unauthorizedHandlerRegistered = true;
+
+    // Try the 30-day refresh token before giving up on a 401 — without this,
+    // every ~30 minutes (the access token's lifetime) any in-progress screen
+    // gets torn down and the user hard-logged-out mid-action, losing
+    // whatever they were doing with no warning.
+    ApiClient.onTokenExpired = () => AuthService().refreshAccessToken();
 
     var handling = false;
     ApiClient.onUnauthorized = () async {
