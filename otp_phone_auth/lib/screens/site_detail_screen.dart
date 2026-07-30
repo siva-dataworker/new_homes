@@ -2507,7 +2507,7 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
   // Default salary rates (used if admin hasn't set custom rates)
   // Rates loaded from admin global rates (single source of truth)
   Map<String, double> _rates = {};
-  bool _isLoadingRates = true;
+  bool _isLoadingRates = !BudgetManagementService.hasCachedGlobalRates;
 
   final _morningExtraCostController = TextEditingController();
   final _morningExtraCostNotesController = TextEditingController();
@@ -2666,7 +2666,11 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
   }
 
   Future<void> _fetchRates() async {
-    setState(() => _isLoadingRates = true);
+    // Skip the loading flash entirely when rates are already cached from an
+    // earlier sheet open this session — only show it for a real network wait.
+    if (!BudgetManagementService.hasCachedGlobalRates) {
+      setState(() => _isLoadingRates = true);
+    }
 
     final rates = await _budgetService.getLabourRates('global');
     if (rates.isNotEmpty && mounted) {
@@ -2861,9 +2865,10 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
 
             // Tab Bar
             Container(
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: AppColors.lightSlate,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: TabBar(
                 controller: _tabController,
@@ -2875,10 +2880,13 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
                   }
                   setState(() {});
                 },
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.symmetric(vertical: 2),
                 indicator: BoxDecoration(
-                  gradient: AppColors.orangeGradient,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.deepNavy,
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                dividerColor: Colors.transparent,
                 labelColor: Colors.white,
                 unselectedLabelColor: AppColors.textSecondary,
                 labelStyle: const TextStyle(
@@ -3769,232 +3777,125 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
     final icon = _getLabourIcon(type);
     final rate = _rates[type] ?? 0;
     final rowTotal = count * rate;
+    final active = count > 0;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        gradient: count > 0
-            ? LinearGradient(
-                colors: [
-                  AppColors.deepNavy.withValues(alpha: 0.08),
-                  AppColors.deepNavy.withValues(alpha: 0.03),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: count == 0 ? Colors.white : null,
-        borderRadius: BorderRadius.circular(16),
+        color: active ? AppColors.deepNavy.withValues(alpha: 0.06) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: count > 0
-              ? AppColors.deepNavy.withValues(alpha: 0.25)
+          color: active
+              ? AppColors.deepNavy.withValues(alpha: 0.3)
               : Colors.grey.shade200,
-          width: count > 0 ? 2 : 1,
+          width: active ? 1.5 : 1,
         ),
-        boxShadow: count > 0
-            ? [
-                BoxShadow(
-                  color: AppColors.deepNavy.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
       ),
       child: Row(
         children: [
-          // Icon Container with gradient
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: count > 0
-                  ? LinearGradient(
-                      colors: [
-                        AppColors.deepNavy,
-                        AppColors.deepNavy.withValues(alpha: 0.8),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : LinearGradient(
-                      colors: [Colors.grey.shade400, Colors.grey.shade300],
-                    ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: count > 0
-                  ? [
-                      BoxShadow(
-                        color: AppColors.deepNavy.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Icon(icon, color: Colors.white, size: 24),
+          Icon(
+            icon,
+            size: 22,
+            color: active ? AppColors.deepNavy : Colors.grey.shade500,
           ),
-          const SizedBox(width: 14),
-          // Labour Type Info
+          const SizedBox(width: 10),
+          // Labour Type Info — fixed to at most 2 short lines, never expands
+          // the row's height or forces the fixed-width counter section out
+          // of view, regardless of screen width or how large the total gets.
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   type,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: count > 0 ? FontWeight.bold : FontWeight.w600,
-                    color: count > 0
-                        ? AppColors.deepNavy
-                        : Colors.grey.shade700,
-                    letterSpacing: -0.3,
+                    fontSize: 15,
+                    fontWeight: active ? FontWeight.bold : FontWeight.w600,
+                    color: active ? AppColors.deepNavy : Colors.grey.shade700,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.currency_rupee,
-                      size: 13,
-                      color: count > 0
-                          ? Colors.green.shade700
-                          : Colors.grey.shade500,
-                    ),
-                    Text(
-                      count > 0
-                          ? '${rate.toStringAsFixed(0)}/day × $count = ₹${rowTotal.toStringAsFixed(0)}'
-                          : '${rate.toStringAsFixed(0)}/day',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: count > 0
-                            ? Colors.green.shade700
-                            : Colors.grey.shade500,
-                        fontWeight: count > 0
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                Text(
+                  active
+                      ? '₹${rate.toStringAsFixed(0)} × $count = ₹${rowTotal.toStringAsFixed(0)}'
+                      : '₹${rate.toStringAsFixed(0)}/day',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    color: active ? Colors.green.shade700 : Colors.grey.shade500,
+                  ),
                 ),
               ],
             ),
           ),
-          // Counter Controls
-          Row(
-            children: [
-              // Minus Button
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: count > 0
-                      ? () => setState(
-                          () => labourCounts[type] = (count - 1).clamp(0, 50),
-                        )
-                      : null,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: count > 0
-                          ? Colors.red.shade50
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: count > 0
-                            ? Colors.red.shade200
-                            : Colors.grey.shade300,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.remove,
-                      size: 22,
-                      color: count > 0
-                          ? Colors.red.shade600
-                          : Colors.grey.shade400,
-                    ),
-                  ),
-                ),
+          const SizedBox(width: 8),
+          // Counter — fixed-width regardless of count's digit count, so it
+          // never competes with the text above for space.
+          _counterButton(
+            icon: Icons.remove,
+            enabled: active,
+            color: Colors.red,
+            onTap: () => setState(
+              () => labourCounts[type] = (count - 1).clamp(0, 50),
+            ),
+          ),
+          SizedBox(
+            width: 30,
+            child: Text(
+              '$count',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: active ? AppColors.deepNavy : Colors.grey.shade600,
               ),
-              const SizedBox(width: 10),
-              // Count Display
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 50,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: count > 0
-                      ? AppColors.orangeGradient
-                      : LinearGradient(
-                          colors: [Colors.grey.shade200, Colors.grey.shade100],
-                        ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: count > 0
-                      ? [
-                          BoxShadow(
-                            color: AppColors.safetyOrange.withValues(
-                              alpha: 0.3,
-                            ),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Center(
-                  child: Text(
-                    '$count',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: count > 0 ? Colors.white : Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Plus Button
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => setState(
-                    () => labourCounts[type] = (count + 1).clamp(0, 50),
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.green.shade400, Colors.green.shade600],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.green.withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.add, size: 22, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
+            ),
+          ),
+          _counterButton(
+            icon: Icons.add,
+            enabled: true,
+            color: Colors.green,
+            onTap: () => setState(
+              () => labourCounts[type] = (count + 1).clamp(0, 50),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _counterButton({
+    required IconData icon,
+    required bool enabled,
+    required MaterialColor color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: enabled ? color.shade50 : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: enabled ? color.shade200 : Colors.grey.shade300,
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: enabled ? color.shade600 : Colors.grey.shade400,
+          ),
+        ),
       ),
     );
   }

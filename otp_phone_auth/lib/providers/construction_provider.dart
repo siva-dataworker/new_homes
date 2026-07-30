@@ -136,23 +136,29 @@ class ConstructionProvider with ChangeNotifier {
     // Check cache first
     final cacheKey = '${PerformanceConfig.streetsCache}_$area';
     final cachedStreets = _cache.get<List<String>>(cacheKey);
-    if (cachedStreets != null) {
+    if (cachedStreets != null && cachedStreets.isNotEmpty) {
       _streetsByArea[area] = cachedStreets;
       notifyListeners();
       return;
     }
-    
-    // Only load if not already cached
-    if (_streetsByArea.containsKey(area)) return;
-    
+
+    // Only skip re-fetching if we already have real (non-empty) data for
+    // this area — this provider lives for the whole app session, so
+    // treating a one-off empty/failed result as permanently cached would
+    // mean a single transient failure blocks that area for the rest of
+    // the session, surviving even hot reloads.
+    if (_streetsByArea[area]?.isNotEmpty ?? false) return;
+
     try {
       final streets = await _constructionService.getStreets(area);
       _streetsByArea[area] = streets;
-      
-      // Cache the result
-      _cache.set(cacheKey, streets, 
-        duration: PerformanceConfig.longCacheDuration);
-      
+
+      // Only cache non-empty results — same reasoning as above.
+      if (streets.isNotEmpty) {
+        _cache.set(cacheKey, streets,
+          duration: PerformanceConfig.longCacheDuration);
+      }
+
       notifyListeners();
     } catch (e) {
       _error = e.toString();

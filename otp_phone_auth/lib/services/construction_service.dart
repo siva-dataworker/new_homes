@@ -99,8 +99,12 @@ class ConstructionService {
 
   Future<List<String>> getStreets(String area) async {
     try {
+      // area is embedded as a URL path segment — must be percent-encoded,
+      // since an area name containing a space (e.g. "Tr pattinam") produces
+      // an invalid/unpredictable path otherwise (same class of bug as the
+      // getSites() query-string issue, but worse: this one's in the path).
       final response = await ApiClient.get(
-        Uri.parse('$baseUrl/construction/streets/$area/'),
+        Uri.parse('$baseUrl/construction/streets/${Uri.encodeComponent(area)}/'),
         headers: await _getHeaders(),
       );
 

@@ -16,6 +16,10 @@ class BudgetManagementService {
   // Cache for global labour rates — loaded once, cleared when admin updates a rate
   static List<Map<String, dynamic>>? _globalRatesCache;
 
+  /// True if global rates are already cached — lets callers skip showing a
+  /// loading spinner when the data will resolve instantly from cache.
+  static bool get hasCachedGlobalRates => _globalRatesCache != null;
+
   /// Allocate budget for a site
   Future<Map<String, dynamic>?> allocateBudget({
     required String siteId,

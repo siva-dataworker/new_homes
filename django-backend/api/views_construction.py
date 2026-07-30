@@ -388,7 +388,7 @@ def submit_labour_count(request):
 
         try:
             with transaction.atomic():
-                execute_query("""
+                entry_inserted = execute_query("""
                     INSERT INTO labour_entries
                         (id, site_id, supervisor_id, labour_count, labour_type,
                          entry_date, entry_time, entry_type, day_of_week,
@@ -397,6 +397,18 @@ def submit_labour_count(request):
                 """, (entry_id, site_id, user_id, labour_count, labour_type,
                       entry_date, entry_time, entry_type, day_of_week,
                       notes, extra_cost, extra_cost_notes, user_role))
+
+                # execute_query() swallows exceptions and returns False rather
+                # than raising — this return value MUST be checked, otherwise
+                # a failed INSERT (constraint violation, transient DB error,
+                # anything) still falls through to the success Response below,
+                # reporting success to the app while nothing was actually saved.
+                if not entry_inserted:
+                    logger.error(f"[LABOUR] ❌ Failed to insert labour_entries "
+                                 f"for site={site_id} type={labour_type} count={labour_count}")
+                    return Response({
+                        'error': 'Failed to save labour entry. Please try again.',
+                    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 # Resolve daily rate (admin-configured > built-in default)
                 rate_row = fetch_one("""
@@ -412,7 +424,7 @@ def submit_labour_count(request):
                               else _DEFAULT_RATES.get(labour_type, 900))
                 total_cost = daily_rate * labour_count
 
-                execute_query("""
+                cost_inserted = execute_query("""
                     INSERT INTO labour_cost_calculation
                         (id, site_id, labour_entry_id, labour_type, labour_count,
                          daily_rate, total_cost, entry_date, day_of_week)
@@ -422,6 +434,15 @@ def submit_labour_count(request):
                             total_cost = EXCLUDED.total_cost
                 """, (str(uuid.uuid4()), site_id, entry_id, labour_type,
                       labour_count, daily_rate, total_cost, entry_date, day_of_week))
+
+                if not cost_inserted:
+                    # The labour entry itself is saved (that's the record that
+                    # matters for "was this submitted"); only the cost-report
+                    # rollup row failed. Log clearly rather than silently
+                    # losing this — surfaces as a budget reporting gap, not a
+                    # missing entry, so still report success to the user.
+                    logger.error(f"[LABOUR] ⚠️ labour_entries saved (id={entry_id}) but "
+                                 f"labour_cost_calculation insert failed — cost reports may be incomplete")
 
                 print(f"[LABOUR] ✅ Inserted entry_id={entry_id} "
                       f"entry_date={entry_date} entry_type={entry_type}")

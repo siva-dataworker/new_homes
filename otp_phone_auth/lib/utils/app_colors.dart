@@ -41,6 +41,17 @@ class AppColors {
   static const Color accountantColor = Color(0xFF1A1A2E); // Dark Navy (Primary)
   static const Color architectColor = Color(0xFF1A1A2E); // Dark Navy
   static const Color ownerColor = Color(0xFF1A1A2E); // Dark Navy
+
+  // Supervisor accent (referenced by supervisor_history_screen,
+  // supervisor_reports_screen, supervisor_photo_upload_screen) — matches
+  // Admin's actual navy blue + white theme, per explicit request, rather
+  // than a distinct per-role color.
+  static const Color supervisorAccent = deepNavy;
+  static const LinearGradient supervisorGradient = LinearGradient(
+    colors: [deepNavy, deepNavyLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
   
   // Status Colors - Grayscale
   static const Color statusCompleted = Color(0xFF424242); // Dark Gray
@@ -187,10 +198,6 @@ class AppColors {
   // Consolidated from the former standalone `BWColors` (black-and-white
   // theme variant, previously in utils/black_white_theme.dart) — same exact
   // values, now under the one palette every screen reads from.
-  // NOTE: kept only for any screen still referencing it directly; Supervisor
-  // screens have been migrated off these in favor of supervisorAccent /
-  // supervisorCardColors below (see .kiro known-issue: Supervisor's screens
-  // were the one place in the app styled literally black-and-white).
   static const Color bwBackground = Color(0xFFFFFFFF);
   static const Color bwSurface = Color(0xFFF6F6F6);
   static const Color bwCard = Color(0xFFFFFFFF);
@@ -201,30 +208,6 @@ class AppColors {
 
   static const LinearGradient bwGradient = LinearGradient(
     colors: [Color(0xFF000000), Color(0xFF757575)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ============================================
-  // Supervisor Screen Colors
-  // Matches the Admin dashboard's design language (rotating saturated
-  // per-card colors driving gradient headers + tinted shadows) instead of
-  // the flat black-and-white treatment Supervisor screens used before.
-  // ============================================
-  static const Color supervisorAccent = Color(0xFF0F766E); // Teal — distinct from Admin's navy, Accountant's blue
-  static const Color supervisorAccentLight = Color(0xFF14B8A6);
-
-  // Same rotation approach as admin_dashboard.dart's _cardColors, so
-  // Supervisor's site/photo cards get the same per-item color identity.
-  static const List<Color> supervisorCardColors = [
-    Color(0xFF0F766E), // Teal
-    Color(0xFF1E3A8A), // Blue
-    Color(0xFFD97706), // Amber
-    Color(0xFF7C3AED), // Violet
-  ];
-
-  static const LinearGradient supervisorGradient = LinearGradient(
-    colors: [supervisorAccent, supervisorAccentLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

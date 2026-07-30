@@ -139,17 +139,17 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
         title: Text(
           widget.siteName ?? 'All Sites History',
           style: const TextStyle(
-            color: AppColors.supervisorAccent,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.cleanWhite,
+        backgroundColor: AppColors.supervisorAccent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.supervisorAccent),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           // Expand/Collapse All Button
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: AppColors.supervisorAccent),
+            icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) {
               if (value == 'expand_all') {
                 _expandAllDates();
@@ -245,7 +245,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
             );
           }
         },
-        backgroundColor: AppColors.supervisorCardColors[2],
+        backgroundColor: AppColors.safetyOrange,
         child: const Icon(Icons.refresh),
       ),
     );
@@ -348,7 +348,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                     Container(
                       padding: EdgeInsets.all(10.r),
                       decoration: BoxDecoration(
-                        gradient: isExpanded ? AppColors.supervisorGradient : null,
+                        gradient: isExpanded ? AppColors.navyGradient : null,
                         color: isExpanded ? null : AppColors.supervisorAccent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
@@ -380,8 +380,8 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                                 decoration: BoxDecoration(
                                   color: isLabour
-                                      ? AppColors.supervisorCardColors[1].withValues(alpha: 0.1)
-                                      : AppColors.supervisorCardColors[2].withValues(alpha: 0.1),
+                                      ? AppColors.safetyOrange.withValues(alpha: 0.1)
+                                      : AppColors.statusCompleted.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
@@ -389,11 +389,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
-                                    // Labour vs Material previously used two AppColors constants
-                                    // (safetyOrange/statusCompleted) that happened to be the exact
-                                    // same gray — the distinction was invisible. Now genuinely
-                                    // color-coded (blue vs amber, matching supervisorCardColors).
-                                    color: isLabour ? AppColors.supervisorCardColors[1] : AppColors.supervisorCardColors[2],
+                                    color: isLabour ? AppColors.safetyOrange : AppColors.statusCompleted,
                                   ),
                                 ),
                               ),
@@ -511,7 +507,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: hasPendingRequest 
-              ? AppColors.supervisorCardColors[2].withValues(alpha: 0.3) 
+              ? AppColors.safetyOrange.withValues(alpha: 0.3) 
               : AppColors.supervisorAccent.withValues(alpha: 0.1),
           width: 1,
         ),
@@ -533,14 +529,14 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                 padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: isLabour
-                      ? AppColors.supervisorCardColors[1].withValues(alpha: 0.1)
-                      : AppColors.supervisorCardColors[2].withValues(alpha: 0.1),
+                      ? AppColors.safetyOrange.withValues(alpha: 0.1)
+                      : AppColors.statusCompleted.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   isLabour ? Icons.people : Icons.inventory_2,
                   size: 18.sp,
-                  color: isLabour ? AppColors.supervisorCardColors[1] : AppColors.supervisorCardColors[2],
+                  color: isLabour ? AppColors.safetyOrange : AppColors.statusCompleted,
                 ),
               ),
               SizedBox(width: 12.w),
@@ -631,7 +627,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: AppColors.supervisorCardColors[2].withValues(alpha: 0.1),
+                color: AppColors.safetyOrange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
@@ -639,7 +635,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.supervisorCardColors[2],
+                  color: AppColors.safetyOrange,
                 ),
               ),
             ),
@@ -683,7 +679,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: AppColors.supervisorCardColors[2].withValues(alpha: 0.1),
+                color: AppColors.safetyOrange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
@@ -691,7 +687,7 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.supervisorCardColors[2],
+                  color: AppColors.safetyOrange,
                 ),
               ),
             ),
@@ -894,9 +890,9 @@ class _SupervisorHistoryScreenState extends State<SupervisorHistoryScreen> with 
                 
                 if (message.isEmpty) {
                   ScaffoldMessenger.of(dialogContext).showSnackBar(
-                    SnackBar(
-                      content: const Text('Please provide a reason for the change request'),
-                      backgroundColor: AppColors.supervisorCardColors[2],
+                    const SnackBar(
+                      content: Text('Please provide a reason for the change request'),
+                      backgroundColor: AppColors.safetyOrange,
                     ),
                   );
                   return;
