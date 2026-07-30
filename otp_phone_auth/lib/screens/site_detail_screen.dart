@@ -3171,14 +3171,13 @@ class _LabourEntrySheetState extends State<_LabourEntrySheet>
           ),
           const SizedBox(height: 16),
 
-          // Display morning entries
+          // Display morning entries — no separate spinner here while
+          // loading; the header above already shows one (small, inline)
+          // for this exact same state, so a second full-size one right
+          // below it was pure duplication, not two genuinely different
+          // things loading.
           if (_isLoadingMorningData)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(color: AppColors.safetyOrange),
-              ),
-            )
+            const SizedBox.shrink()
           else if (_morningData != null && _morningData!['entries'] != null)
             ..._buildMorningEntriesDisplay(
               _morningData!['entries'] as List<Map<String, dynamic>>,
