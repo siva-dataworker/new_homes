@@ -320,7 +320,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         SliverAppBar(
           floating: true,
           snap: true,
-          backgroundColor: AppColors.cleanWhite,
+          backgroundColor: AppColors.supervisorAccent,
           elevation: 0,
           toolbarHeight: 70,
           title: Row(
@@ -329,11 +329,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                 width: 45.w,
                 height: 45.h,
                 decoration: BoxDecoration(
-                  gradient: AppColors.supervisorGradient,
+                  color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.supervisorAccent.withValues(alpha: 0.3),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 8.r,
                       offset: const Offset(0, 2),
                     ),
@@ -343,7 +343,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   child: Text(
                     avatarInitial(_currentUser?['full_name'] as String?, 'S'),
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.supervisorAccent,
                       fontWeight: FontWeight.bold,
                       fontSize: 20.sp,
                     ),
@@ -361,7 +361,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                       style: TextStyle(
                         fontSize: 17.sp,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.supervisorAccent,
+                        color: Colors.white,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -372,7 +372,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                           width: 8.w,
                           height: 8.h,
                           decoration: const BoxDecoration(
-                            color: AppColors.supervisorAccent,
+                            color: Colors.greenAccent,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -381,7 +381,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                           'Active Now',
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: AppColors.textSecondary,
+                            color: Colors.white70,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -681,11 +681,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
                   isLoading: _isLoadingWorkingSites,
                   isEmpty: _workingSites.isEmpty,
                   emptyMessage: 'No working sites for today',
-                  children: _workingSites
-                      .asMap()
-                      .entries
-                      .map((e) => _buildSiteListItem(e.value, e.key))
-                      .toList(),
+                  children: _workingSites.map((site) => _buildSiteListItem(site)).toList(),
                   onRefresh: _loadWorkingSites,
                 ),
 
@@ -799,12 +795,11 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
     );
   }
 
-  Widget _buildSiteListItem(Map<String, dynamic> site, [int index = 0]) {
-    final cardColor = AppColors.supervisorCardColors[index % AppColors.supervisorCardColors.length];
+  Widget _buildSiteListItem(Map<String, dynamic> site) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: cardColor.withValues(alpha: 0.1),
-        child: Icon(Icons.location_on, color: cardColor, size: 20.sp),
+        backgroundColor: AppColors.supervisorAccent.withValues(alpha: 0.1),
+        child: Icon(Icons.location_on, color: AppColors.supervisorAccent, size: 20.sp),
       ),
       title: Text(
         site['site_name'] ?? 'Unknown Site',
@@ -822,24 +817,24 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
-                color: cardColor.withValues(alpha: 0.15),
+                color: AppColors.supervisorAccent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4.r),
                 border: Border.all(
-                  color: cardColor.withValues(alpha: 0.3),
+                  color: AppColors.supervisorAccent.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.location_city, size: 10.sp, color: cardColor),
+                  Icon(Icons.location_city, size: 10.sp, color: AppColors.supervisorAccent),
                   SizedBox(width: 3.w),
                   Text(
                     site['area'],
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w600,
-                      color: cardColor,
+                      color: AppColors.supervisorAccent,
                     ),
                   ),
                 ],
@@ -1365,11 +1360,12 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
           // Simple Profile Header
           SliverAppBar(
             floating: true,
-            backgroundColor: AppColors.cleanWhite,
+            backgroundColor: AppColors.supervisorAccent,
             elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
             title: const Text(
               'Profile',
-              style: TextStyle(color: AppColors.supervisorAccent),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
           // Profile Info
