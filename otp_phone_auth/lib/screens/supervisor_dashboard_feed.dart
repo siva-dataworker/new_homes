@@ -318,8 +318,7 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
       slivers: [
         // Header
         SliverAppBar(
-          floating: true,
-          snap: true,
+          pinned: true,
           backgroundColor: AppColors.supervisorAccent,
           elevation: 0,
           toolbarHeight: 70,
@@ -635,12 +634,12 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-          floating: true,
-          backgroundColor: AppColors.cleanWhite,
+          pinned: true,
+          backgroundColor: AppColors.supervisorAccent,
           elevation: 0,
           title: const Text(
             'Statistics',
-            style: TextStyle(color: AppColors.supervisorAccent),
+            style: TextStyle(color: Colors.white),
           ),
         ),
         SliverToBoxAdapter(
@@ -1359,13 +1358,12 @@ class _SupervisorDashboardFeedState extends State<SupervisorDashboardFeed> {
         slivers: [
           // Simple Profile Header
           SliverAppBar(
-            floating: true,
+            pinned: true,
             backgroundColor: AppColors.supervisorAccent,
             elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.white),
             title: const Text(
               'Profile',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white),
             ),
           ),
           // Profile Info
