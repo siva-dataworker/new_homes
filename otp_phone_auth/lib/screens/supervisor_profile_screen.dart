@@ -144,7 +144,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
       backgroundColor: AppColors.lightSlate,
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: AppColors.supervisorAccent,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -169,11 +169,11 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                     width: 100.w,
                     height: 100.h,
                     decoration: BoxDecoration(
-                      color: AppColors.safetyOrange,
+                      color: AppColors.supervisorAccent,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.safetyOrange.withValues(alpha: 0.3),
+                          color: AppColors.supervisorAccent.withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -196,7 +196,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.deepNavy.withValues(alpha: 0.05),
+                        color: AppColors.supervisorAccent.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -233,7 +233,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.deepNavy.withValues(alpha: 0.05),
+                        color: AppColors.supervisorAccent.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -274,7 +274,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                 Container(
                   padding: EdgeInsets.all(16.r),
                   decoration: BoxDecoration(
-                    color: AppColors.deepNavy.withValues(alpha: 0.05),
+                    color: AppColors.supervisorAccent.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(color: AppColors.borderColor),
                   ),
@@ -305,7 +305,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _saveProfile,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.safetyOrange,
+                      backgroundColor: AppColors.supervisorAccent,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -337,10 +337,10 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                 Container(
                   padding: EdgeInsets.all(16.r),
                   decoration: BoxDecoration(
-                    color: AppColors.safetyOrange.withValues(alpha: 0.1),
+                    color: AppColors.supervisorAccent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: AppColors.safetyOrange.withValues(alpha: 0.3),
+                      color: AppColors.supervisorAccent.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -348,7 +348,7 @@ class _SupervisorProfileScreenState extends State<SupervisorProfileScreen> {
                       Container(
                         padding: EdgeInsets.all(8.r),
                         decoration: BoxDecoration(
-                          color: AppColors.safetyOrange,
+                          color: AppColors.supervisorAccent,
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Icon(

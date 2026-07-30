@@ -74,7 +74,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
         title: Text(
           'Client Extra Requirement',
           style: TextStyle(
-            color: AppColors.deepNavy,
+            color: AppColors.supervisorAccent,
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
@@ -89,15 +89,15 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
                 padding:
                     EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  color: AppColors.deepNavy.withValues(alpha: 0.08),
+                  color: AppColors.supervisorAccent.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                      color: AppColors.deepNavy.withValues(alpha: 0.2)),
+                      color: AppColors.supervisorAccent.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.location_on,
-                        color: AppColors.deepNavy, size: 18.sp),
+                        color: AppColors.supervisorAccent, size: 18.sp),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
@@ -105,7 +105,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.deepNavy,
+                          color: AppColors.supervisorAccent,
                         ),
                       ),
                     ),
@@ -122,7 +122,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
                   hintText: 'Enter requirement description',
                   border: OutlineInputBorder(),
                   prefixIcon:
-                      Icon(Icons.description, color: AppColors.deepNavy),
+                      Icon(Icons.description, color: AppColors.supervisorAccent),
                 ),
                 maxLines: 3,
               ),
@@ -136,7 +136,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
                   hintText: 'Enter amount',
                   border: OutlineInputBorder(),
                   prefixIcon:
-                      Icon(Icons.currency_rupee, color: AppColors.deepNavy),
+                      Icon(Icons.currency_rupee, color: AppColors.supervisorAccent),
                   prefixText: '₹ ',
                 ),
                 keyboardType: TextInputType.number,
@@ -188,7 +188,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.deepNavy,
+              backgroundColor: AppColors.supervisorAccent,
               foregroundColor: Colors.white,
             ),
             child: const Text('Submit'),
@@ -206,24 +206,24 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
         title: Text(
           'Reports',
           style: TextStyle(
-            color: AppColors.deepNavy,
+            color: AppColors.supervisorAccent,
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: AppColors.cleanWhite,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.deepNavy),
+        iconTheme: const IconThemeData(color: AppColors.supervisorAccent),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.deepNavy),
+            icon: const Icon(Icons.refresh, color: AppColors.supervisorAccent),
             onPressed: _loadWorkingSites,
           ),
         ],
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.deepNavy))
+              child: CircularProgressIndicator(color: AppColors.supervisorAccent))
           : _error != null
               ? _buildError()
               : _sites.isEmpty
@@ -248,7 +248,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
             ElevatedButton(
               onPressed: _loadWorkingSites,
               style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.deepNavy,
+                  backgroundColor: AppColors.supervisorAccent,
                   foregroundColor: Colors.white),
               child: const Text('Retry'),
             ),
@@ -272,7 +272,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
             style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.deepNavy),
+                color: AppColors.supervisorAccent),
           ),
           SizedBox(height: 8.h),
           Text(
@@ -287,7 +287,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
   Widget _buildSiteList() {
     return RefreshIndicator(
       onRefresh: _loadWorkingSites,
-      color: AppColors.deepNavy,
+      color: AppColors.supervisorAccent,
       child: ListView(
         padding: EdgeInsets.all(16.r),
         children: [
@@ -325,7 +325,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
         borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
-            color: AppColors.deepNavy.withValues(alpha: 0.06),
+            color: AppColors.supervisorAccent.withValues(alpha: 0.06),
             blurRadius: 10.r,
             offset: const Offset(0, 3),
           ),
@@ -339,11 +339,11 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
             Container(
               padding: EdgeInsets.all(10.r),
               decoration: BoxDecoration(
-                color: AppColors.deepNavy.withValues(alpha: 0.08),
+                color: AppColors.supervisorAccent.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(Icons.location_city,
-                  color: AppColors.deepNavy, size: 22.sp),
+                  color: AppColors.supervisorAccent, size: 22.sp),
             ),
             SizedBox(width: 14.w),
 
@@ -359,7 +359,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.deepNavy,
+                      color: AppColors.supervisorAccent,
                     ),
                   ),
                   if (location.isNotEmpty) ...[
@@ -394,7 +394,7 @@ class _SupervisorReportsScreenState extends State<SupervisorReportsScreen> {
             ElevatedButton(
               onPressed: () => _showClientRequirementDialog(site),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.deepNavy,
+                backgroundColor: AppColors.supervisorAccent,
                 foregroundColor: Colors.white,
                 padding:
                     EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),

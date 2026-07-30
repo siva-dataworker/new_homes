@@ -299,7 +299,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
       backgroundColor: AppColors.lightSlate,
       appBar: AppBar(
         title: const Text('Upload Site Photos'),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: AppColors.supervisorAccent,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -310,7 +310,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
             width: double.infinity,
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              gradient: AppColors.navyGradient,
+              gradient: AppColors.supervisorGradient,
               boxShadow: [AppColors.cardShadow],
             ),
             child: Column(
@@ -349,7 +349,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                gradient: AppColors.orangeGradient,
+                gradient: AppColors.supervisorGradient,
                 borderRadius: BorderRadius.circular(12.r),
               ),
               labelColor: Colors.white,
@@ -396,7 +396,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.deepNavy,
+              color: AppColors.supervisorAccent,
             ),
           ),
           SizedBox(height: 16.h),
@@ -410,7 +410,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
                   icon: const Icon(Icons.camera_alt),
                   label: const Text('Take Photo'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.deepNavy,
+                    backgroundColor: AppColors.supervisorAccent,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
@@ -443,14 +443,14 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
           if (photos.isNotEmpty) ...[
             Row(
               children: [
-                Icon(Icons.upload_file, size: 18.sp, color: AppColors.safetyOrange),
+                Icon(Icons.upload_file, size: 18.sp, color: AppColors.supervisorAccent),
                 SizedBox(width: 8.w),
                 Text(
                   'Ready to Upload (${photos.length})',
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.safetyOrange,
+                    color: AppColors.supervisorAccent,
                   ),
                 ),
               ],
@@ -473,7 +473,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
             ElevatedButton(
               onPressed: isUploading ? null : () => _uploadPhotos(isMorning),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.safetyOrange,
+                backgroundColor: AppColors.supervisorAccent,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
@@ -557,7 +557,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.deepNavy,
+                color: AppColors.supervisorAccent,
               ),
             ),
             SizedBox(height: 8.h),
@@ -596,7 +596,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.deepNavy,
+                color: AppColors.supervisorAccent,
               ),
             ),
             SizedBox(height: 8.h),
@@ -841,7 +841,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.deepNavy,
+                              color: AppColors.supervisorAccent,
                             ),
                           ),
                           SizedBox(height: 4.h),
@@ -870,7 +870,7 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: AppColors.deepNavy,
+                        color: AppColors.supervisorAccent,
                         size: 24.sp,
                       ),
                     ),
