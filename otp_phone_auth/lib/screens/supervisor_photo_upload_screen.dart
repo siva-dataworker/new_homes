@@ -342,16 +342,20 @@ class _SupervisorPhotoUploadScreenState extends State<SupervisorPhotoUploadScree
           // Tab Bar
           Container(
             margin: EdgeInsets.all(16.r),
+            padding: EdgeInsets.all(4.r),
             decoration: BoxDecoration(
               color: AppColors.lightSlate,
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(14.r),
             ),
             child: TabBar(
               controller: _tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorPadding: EdgeInsets.symmetric(vertical: 2.h),
               indicator: BoxDecoration(
                 gradient: AppColors.supervisorGradient,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
+              dividerColor: Colors.transparent,
               labelColor: Colors.white,
               unselectedLabelColor: AppColors.textSecondary,
               labelStyle: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),

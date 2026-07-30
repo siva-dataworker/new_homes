@@ -4423,17 +4423,21 @@ class _MaterialEntrySheetState extends State<_MaterialEntrySheet>
 
             // Tab Bar
             Container(
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: AppColors.lightSlate,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: TabBar(
                 controller: _tabController,
                 onTap: (_) => setState(() {}),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.symmetric(vertical: 2),
                 indicator: BoxDecoration(
-                  gradient: AppColors.greenGradient,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.deepNavy,
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                dividerColor: Colors.transparent,
                 labelColor: Colors.white,
                 unselectedLabelColor: AppColors.textSecondary,
                 labelStyle: const TextStyle(

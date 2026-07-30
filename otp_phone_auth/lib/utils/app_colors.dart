@@ -76,8 +76,13 @@ class AppColors {
     end: Alignment.bottomRight,
   );
   
+  // Genuinely orange, unlike before — this was defined as black/dark-gray
+  // ([0xFF424242, 0xFF000000]), a leftover from an earlier grayscale
+  // conversion pass. Only used by Supervisor/Site Engineer screens
+  // (site_detail_screen.dart, supervisor_photo_upload_screen.dart), so this
+  // doesn't affect any other role.
   static const LinearGradient orangeGradient = LinearGradient(
-    colors: [Color(0xFF424242), Color(0xFF000000)],
+    colors: [Color(0xFFF97316), Color(0xFFEA580C)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -143,8 +148,10 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+  // Genuinely green, unlike before — same grayscale-leftover issue as
+  // orangeGradient above ([0xFF424242, 0xFF212121] was black/dark-gray).
   static const LinearGradient greenGradient = LinearGradient(
-    colors: [Color(0xFF424242), Color(0xFF212121)],
+    colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
