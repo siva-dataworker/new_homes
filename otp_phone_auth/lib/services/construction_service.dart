@@ -120,14 +120,19 @@ class ConstructionService {
     String? street,
   }) async {
     try {
-      var url = '$baseUrl/construction/sites/';
-      final params = <String>[];
-      if (area != null) params.add('area=$area');
-      if (street != null) params.add('street=$street');
-      if (params.isNotEmpty) url += '?${params.join('&')}';
+      // Uri.replace(queryParameters:) percent-encodes values automatically —
+      // area/street names containing spaces (e.g. "Temple Street") broke the
+      // previous raw string-concatenation approach, silently returning zero
+      // matching sites.
+      final queryParams = <String, String>{};
+      if (area != null) queryParams['area'] = area;
+      if (street != null) queryParams['street'] = street;
+      final uri = Uri.parse('$baseUrl/construction/sites/').replace(
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
 
       final response = await ApiClient.get(
-        Uri.parse(url),
+        uri,
         headers: await _getHeaders(),
       );
 
