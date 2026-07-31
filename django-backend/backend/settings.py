@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'storages',
     'api',
 ]
 
@@ -125,31 +124,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'  # For Render deployment
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (uploaded photos)
-# Backed by Supabase Storage (S3-compatible) when AWS_ACCESS_KEY_ID is set;
-# falls back to local disk storage otherwise (e.g. before credentials are
-# configured, or for local dev without touching Supabase).
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='site-media')
-AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default='')
-AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-1')
-
-USE_SUPABASE_STORAGE = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_S3_ENDPOINT_URL)
-
-if USE_SUPABASE_STORAGE:
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    # Supabase's S3-compatible gateway manages bucket-level public access
-    # itself (set when the bucket was created) rather than per-object ACLs —
-    # sending an ACL header causes errors, so leave it unset.
-    AWS_DEFAULT_ACL = None
-    AWS_QUERYSTRING_AUTH = False  # plain public URLs, no signed query params
-    AWS_S3_ADDRESSING_STYLE = 'path'  # required for non-AWS S3-compatible endpoints
-    AWS_S3_FILE_OVERWRITE = False
-    AWS_S3_VERIFY = True
-    MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
-else:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # File upload limits - increase from default 2.5MB to 50MB
 # This allows uploading multiple high-quality photos

@@ -2722,7 +2722,7 @@ def upload_site_photo(request):
         
         # Save file
         saved_path = default_storage.save(filepath, photo)
-        image_url = default_storage.url(saved_path)
+        image_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Insert into database
         update_id = str(uuid.uuid4())
@@ -2971,7 +2971,7 @@ def upload_architect_document(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = default_storage.url(saved_path)
+        file_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Get current date and day of week
         today = datetime.now().date()
@@ -3443,7 +3443,7 @@ def upload_project_file(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = default_storage.url(saved_path)
+        file_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Insert into database
         file_id = str(uuid.uuid4())
@@ -3987,7 +3987,7 @@ def upload_site_engineer_document(request):
         
         # Save file
         saved_path = default_storage.save(filepath, file)
-        file_url = default_storage.url(saved_path)
+        file_url = f"{settings.MEDIA_URL}{saved_path}"
         
         # Get current date and day of week
         today = datetime.now().date()
@@ -4402,7 +4402,7 @@ def supervisor_upload_photos(request):
                 photo_id,
                 site_id,
                 user_id,
-                default_storage.url(file_path),
+                f'/media/{file_path}',
                 upload_date,
                 time_of_day,
                 f'{time_of_day.capitalize()} photo uploaded by supervisor'
